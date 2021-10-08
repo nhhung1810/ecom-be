@@ -1,9 +1,10 @@
 package main
 
 import (
-	"app/authentication"
+	"ecom-be/app/authentication"
 	"fmt"
 	"net/http"
+
 	"github.com/gin-gonic/gin"
 )
 
