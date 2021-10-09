@@ -1,12 +1,14 @@
 FROM golang:1.16-alpine
 
-WORKDIR /app
+ENV GOPATH=/
+WORKDIR /src/ecom-be/app
 COPY ./app .
 
-RUN go get -u github.com/gin-gonic/gin
+RUN go get github.com/gin-gonic/gin
+RUN go get github.com/dgrijalva/jwt-go
 # RUN go install -v ./...
 
 RUN go build -o main main.go
 EXPOSE 5000
 
-CMD ["/app/main"]
+CMD ["/src/ecom-be/app/main"]

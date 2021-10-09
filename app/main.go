@@ -1,15 +1,13 @@
 package main
 
 import (
-	"ecom-be/app/authentication"
-	"fmt"
-	"net/http"
+	"ecom-be/app/controllers/authHandle"
+	"os"
 
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
-	fmt.Print("Hello pong")
 	routing()
 }
 
@@ -23,23 +21,16 @@ func routing() {
 		})
 	})
 
-	r.POST("/login", func(c *gin.Context) {
-		var info authentication.Credential
-		var a authentication.AuthHandle
-		info = a.ParseCredential(c)
-		// if err := c.BindJSON(&info); err != nil {
-		// 	return
-		// }
+	r.POST("/register", authHandle.RegisterHandle)
+	r.POST("/login", authHandle.LoginHandle)
+	// r.POST("/logout", authHandle.LoginHandle)
+	r.GET("/user", authHandle.UserHandle)
 
-		fmt.Println(info.Username)
-		fmt.Println(info.Password)
-		c.IndentedJSON(http.StatusCreated, info.Username)
-	})
-
-	r.Run() // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
+	r.Run()
 }
 
-// type Credential struct {
-// 	Username string `json:"username"`
-// 	Password string `json:"password"`
-// }
+func setEnvironment(key string, value string) {
+	os.Setenv(key, value)
+	// HOW TO GET THE ENV VARIABLE
+	// os.Getenv(Key)
+}
