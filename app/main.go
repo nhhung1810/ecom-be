@@ -4,6 +4,7 @@ import (
 	"ecom-be/app/controllers/authHandle"
 	"os"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -13,6 +14,11 @@ func main() {
 
 func routing() {
 	r := gin.Default()
+
+	config := cors.DefaultConfig()
+	config.AllowOrigins = []string{"http://localhost:3000"}
+	config.AllowCredentials = true
+	r.Use(cors.New(config))
 
 	// The routing
 	r.GET("/ping", func(c *gin.Context) {
