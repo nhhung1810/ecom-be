@@ -2,6 +2,8 @@ package main
 
 import (
 	"ecom-be/app/controllers/authHandle"
+	"ecom-be/app/models"
+
 	"os"
 
 	"github.com/gin-contrib/cors"
@@ -9,6 +11,7 @@ import (
 )
 
 func main() {
+	models.Connect()
 	routing()
 }
 

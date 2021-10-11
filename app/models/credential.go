@@ -11,7 +11,7 @@ import (
 var database []Credential
 
 type User struct {
-	ID       int    `json:"id"`
+	ID       int    `json:"id" gorm:"primaryKey;autoIncrement"`
 	Name     string `json:"name"`
 	Email    string `json:"email"`
 	Password string `json:"-"`
@@ -25,33 +25,33 @@ type Credential struct {
 }
 
 func (c Credential) CheckExisted() (*User, error) {
-	data := database
-	// var hashedPassword []byte
-	for i := 0; i < len(data); i++ {
-		if data[i].Email == c.Email {
-			user := &User{
-				ID:       i,
-				Name:     data[i].Name,
-				Email:    data[i].Email,
-				Password: data[i].Password,
-			}
-			return user, nil
-		}
+	user, err := FindUserByEmail(c.Email)
+	if err != nil {
+		return nil, errors.New("error: Can not find the user")
 	}
-	return nil, errors.New("Error: Can not find the user")
+
+	return user, nil
 }
 
 func (c Credential) AddNewAccount() bool {
 	//TODO: connect database
 	password, _ := bcrypt.GenerateFromPassword([]byte(c.Password), 14)
 	c.Password = string(password)
-	database = append(database, c)
+	user := &User{
+		Name:     c.Name,
+		Password: c.Password,
+		Email:    c.Email,
+	}
+
+	AddUser(user)
 	return true
 }
 
 // DATABASE FUNCTION
 func CountDB() int {
-	return len(database)
+	var users []User
+	result := db.Find(&users)
+	return int(result.RowsAffected)
 }
 
 func FetchAccount() []Credential {
@@ -67,19 +67,24 @@ func ParseCredential(c *gin.Context) Credential {
 	return info
 }
 
-func FindUser(id int) (*User, error) {
-	data := database
-	if len(data) < id {
-		return nil, errors.New("error: Can not find the user")
-	}
-	user := &User{
-		ID:       id,
-		Name:     data[id].Name,
-		Email:    data[id].Email,
-		Password: data[id].Password,
-	}
-
-	return user, nil
+func AddUser(user *User) {
+	db.Create(user)
 }
 
+func FindUserByEmail(email string) (*User, error) {
+	var user User
+	db.Where("email = ?", email).First(&user)
+	if user.ID == 0 {
+		return nil, errors.New("error: no such user")
+	}
+	return &user, nil
+}
 
+func FindUserByID(id int) (*User, error) {
+	var user User
+	db.First(&user, id)
+	if user.ID == 0 {
+		return nil, errors.New("error: no such user")
+	}
+	return &user, nil
+}

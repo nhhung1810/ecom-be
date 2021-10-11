@@ -107,7 +107,7 @@ func UserHandle(c *gin.Context) {
 	}
 
 	println("id: ", id)
-	user, err := models.FindUser(id)
+	user, err := models.FindUserByID(id)
 	if err != nil {
 		c.IndentedJSON(http.StatusNotFound, gin.H{
 			"message": "can not find user",
