@@ -7,9 +7,6 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-// sameple database
-var database []Credential
-
 type User struct {
 	ID       int    `json:"id" gorm:"primaryKey;autoIncrement"`
 	Name     string `json:"name"`

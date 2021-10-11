@@ -32,7 +32,7 @@ func routing() {
 
 	r.POST("/register", authHandle.RegisterHandle)
 	r.POST("/login", authHandle.LoginHandle)
-	// r.POST("/logout", authHandle.LoginHandle)
+	r.POST("/logout", authHandle.LogoutHandle)
 	r.GET("/user", authHandle.UserHandle)
 
 	r.Run()
