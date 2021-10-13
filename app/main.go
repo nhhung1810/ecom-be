@@ -11,7 +11,7 @@ import (
 )
 
 func main() {
-	models.Connect()
+	models.Connect() //check here
 	routing()
 }
 

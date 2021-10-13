@@ -12,6 +12,7 @@ type User struct {
 	Name     string `json:"name"`
 	Email    string `json:"email"`
 	Password string `json:"-"`
+	// mo hinh 3 lop
 }
 
 type Credential struct {
@@ -65,7 +66,8 @@ func ParseCredential(c *gin.Context) Credential {
 }
 
 func AddUser(user *User) {
-	db.Create(user)
+	db.Create(user) 
+	//context api
 }
 
 func FindUserByEmail(email string) (*User, error) {
