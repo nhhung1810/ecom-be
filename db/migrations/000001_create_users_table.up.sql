@@ -5,3 +5,4 @@ create table Users
     email VARCHAR(50) NOT NULL,
     PASSWORD VARCHAR(1000) NOT NULL
 );
+

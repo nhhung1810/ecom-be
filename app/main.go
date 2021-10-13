@@ -1,41 +1,30 @@
 package main
 
 import (
-	"ecom-be/app/controllers/authHandle"
-	"ecom-be/app/models"
+	"ecom-be/app/auth"
+	"ecom-be/app/database"
+	"ecom-be/app/handle"
+	"log"
 
 	"os"
-
-	"github.com/gin-contrib/cors"
-	"github.com/gin-gonic/gin"
 )
 
 func main() {
-	models.Connect() //check here
-	routing()
-}
+	// models.Connect() //check here
+	storage, err := database.NewStorage()
+	if err != nil {
+		log.Fatal("Database error: ", err)
+		return
+	}
+	auth := auth.NewService(storage)
 
-func routing() {
-	r := gin.Default()
-
-	config := cors.DefaultConfig()
-	config.AllowOrigins = []string{"http://localhost:3000"}
-	config.AllowCredentials = true
-	r.Use(cors.New(config))
-
-	// The routing
-	r.GET("/ping", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "pong",
-		})
-	})
-
-	r.POST("/register", authHandle.RegisterHandle)
-	r.POST("/login", authHandle.LoginHandle)
-	r.POST("/logout", authHandle.LogoutHandle)
-	r.GET("/user", authHandle.UserHandle)
-
-	r.Run()
+	router, err := handle.Handler(auth)
+	if err != nil {
+		print(err)
+		log.Fatal("Router error: ", err)
+		return
+	}
+	router.Run()
 }
 
 func setEnvironment(key string, value string) {

@@ -5,8 +5,6 @@ import (
 	"gorm.io/gorm"
 )
 
-// https://github.com/jackc/pgx
-
 var db *gorm.DB
 
 func Connect() {
