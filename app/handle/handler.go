@@ -28,5 +28,8 @@ func Handler(auth auth.Service) (*gin.Engine, error) {
 	router.POST("/logout", logoutHandle(auth))
 	router.GET("/user", userHandle(auth))
 
+	// IMAGE HANDLE
+	router.GET("/image", imageHandle())
+
 	return router, nil
 }
