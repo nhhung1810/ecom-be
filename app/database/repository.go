@@ -5,8 +5,9 @@ import (
 	"errors"
 )
 
-var errExistingAccount = errors.New("error: account exist")
-var errNotExisted = errors.New("error: account not exist")
+var errExistingAccount = errors.New("error: user existed")
+var errNotExistedAccount = errors.New("error: user not exist")
+var errNotExistedProduct = errors.New("error: user not exist")
 var errUnknown = errors.New("error: unknown error")
 
 type Storage struct {

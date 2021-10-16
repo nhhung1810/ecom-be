@@ -12,14 +12,17 @@ func (s *Storage) AddAccount(user auth.User) error {
 	var testID int
 	err := s.db.QueryRow(
 		`INSERT INTO Users (name, email, password) 
-		VALUES ($1, $2, $3) RETURNING id`, user.Name, user.Email, user.Password).Scan(&testID)
+			VALUES ($1, $2, $3) RETURNING id`,
+		user.Name,
+		user.Email,
+		user.Password,
+	).Scan(&testID)
 
 	if err, ok := err.(*pq.Error); ok {
 		errStr := "pq error:" + err.Code.Name()
 		return errors.New("add account error: " + errStr)
 	}
 
-	println("INSERT ACCOUNT TEST:", err, testID)
 	return nil
 }
 
@@ -32,7 +35,7 @@ func (s *Storage) FindUserByEmail(email string) (*auth.User, error) {
 
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, errNotExisted
+			return nil, errNotExistedAccount
 		}
 		return nil, errUnknown
 	}
@@ -48,7 +51,7 @@ func (s *Storage) FindUserByID(id int) (*auth.User, error) {
 
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, errNotExisted
+			return nil, errNotExistedAccount
 		}
 		return nil, errUnknown
 	}
