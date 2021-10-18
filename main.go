@@ -4,8 +4,9 @@ import (
 	"ecom-be/app/auth"
 	"ecom-be/app/database"
 	"ecom-be/app/handle"
+	myimg "ecom-be/app/image"
+	"ecom-be/app/product"
 	"log"
-
 	"os"
 )
 
@@ -17,8 +18,9 @@ func main() {
 		return
 	}
 	auth := auth.NewService(storage)
-
-	router, err := handle.Handler(auth)
+	img := myimg.NewService(storage)
+	pr := product.NewService(storage)
+	router, err := handle.Handler(auth, img, pr)
 	if err != nil {
 		print(err)
 		log.Fatal("Router error: ", err)
