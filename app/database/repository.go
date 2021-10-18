@@ -2,6 +2,7 @@ package database
 
 import (
 	"database/sql"
+	"ecom-be/app/config"
 	"errors"
 )
 
@@ -16,7 +17,7 @@ type Storage struct {
 
 // make database
 func NewStorage() (*Storage, error) {
-	connStr := "host=localhost user=postgres password=admin dbname=ecom port=5432 sslmode=disable TimeZone=Asia/Shanghai"
+	connStr := config.DefaultConfig.ConnString
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		return nil, err

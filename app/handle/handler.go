@@ -2,6 +2,7 @@ package handle
 
 import (
 	"ecom-be/app/auth"
+	"ecom-be/app/config"
 	myimg "ecom-be/app/image"
 	"ecom-be/app/product"
 
@@ -12,10 +13,11 @@ import (
 func Handler(auth auth.Service, img myimg.Service, pr product.Service) (*gin.Engine, error) {
 	// TODO: Handle error here
 	router := gin.Default()
-	config := cors.DefaultConfig()
-	config.AllowOrigins = []string{"http://localhost:3000"}
-	config.AllowCredentials = true
-	router.Use(cors.New(config))
+
+	corConfig := cors.DefaultConfig()
+	corConfig.AllowOrigins = config.DefaultConfig.AllowOrigin
+	corConfig.AllowCredentials = true
+	router.Use(cors.New(corConfig))
 
 	//TEST ROUTING
 	router.GET("/ping", func(c *gin.Context) {

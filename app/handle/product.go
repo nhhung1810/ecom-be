@@ -9,7 +9,6 @@ import (
 
 func uploadProduct(pr product.Service) func(c *gin.Context) {
 	return func(c *gin.Context) {
-		// TODO: Connect with product-user table
 		userid, err := cookieAuth(c)
 		println(*userid)
 		if err != nil {
@@ -46,8 +45,6 @@ func uploadProduct(pr product.Service) func(c *gin.Context) {
 
 func getAllProducts(pr product.Service) func(c *gin.Context) {
 	return func(c *gin.Context) {
-		// Check jwt cookies
-		// fetch data and images id to make path
 		userid, err := cookieAuth(c)
 		println(*userid)
 		if err != nil {

@@ -7,7 +7,6 @@ import (
 	myimg "ecom-be/app/image"
 	"ecom-be/app/product"
 	"log"
-	"os"
 )
 
 func main() {
@@ -20,6 +19,7 @@ func main() {
 	auth := auth.NewService(storage)
 	img := myimg.NewService(storage)
 	pr := product.NewService(storage)
+
 	router, err := handle.Handler(auth, img, pr)
 	if err != nil {
 		print(err)
@@ -27,10 +27,4 @@ func main() {
 		return
 	}
 	router.Run()
-}
-
-func setEnvironment(key string, value string) {
-	os.Setenv(key, value)
-	// HOW TO GET THE ENV VARIABLE
-	// os.Getenv(Key)
 }
