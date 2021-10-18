@@ -7,7 +7,12 @@ type Product struct {
 	Brand       string  `json:"brand"`
 	Price       float32 `json:"price"`
 	Size        string  `json:"size"`
-	Color       string  `json:"color"`
+	Color       string  `json:"colors"`
 	Quantity    int     `json:"quantity"`
 	Description string  `json:"description"`
+}
+
+type ProductImage struct {
+	Prod    Product
+	Imageid []string
 }

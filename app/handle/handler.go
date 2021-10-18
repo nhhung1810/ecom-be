@@ -3,12 +3,13 @@ package handle
 import (
 	"ecom-be/app/auth"
 	myimg "ecom-be/app/image"
+	"ecom-be/app/product"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
-func Handler(auth auth.Service, img myimg.Service) (*gin.Engine, error) {
+func Handler(auth auth.Service, img myimg.Service, pr product.Service) (*gin.Engine, error) {
 	// TODO: Handle error here
 	router := gin.Default()
 	config := cors.DefaultConfig()
@@ -23,7 +24,7 @@ func Handler(auth auth.Service, img myimg.Service) (*gin.Engine, error) {
 		})
 	})
 
-	//AUTH HANDLE
+	// AUTH HANDLE
 	router.POST("/register", registerHandle(auth))
 	router.POST("/login", loginHandle(auth))
 	router.POST("/logout", logoutHandle(auth))
@@ -32,7 +33,11 @@ func Handler(auth auth.Service, img myimg.Service) (*gin.Engine, error) {
 	// IMAGE HANDLE
 	router.GET("/image", imageHandle())
 	router.GET("/image/:id", getImageHandle(img))
-	router.POST("/upload", uploadImageHandle(img))
+	router.POST("/upload/image", uploadImageHandle(img))
+
+	// PROD HANDLE
+	router.GET("/product", getAllProducts(pr))
+	router.POST("/upload/product", uploadProduct(pr))
 
 	return router, nil
 }

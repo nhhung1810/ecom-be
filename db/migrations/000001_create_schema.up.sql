@@ -35,3 +35,4 @@ create table ProductUser(
     userid int not null REFERENCES Users(id),
     PRIMARY KEY(productid, userid)
 )
+

@@ -22,7 +22,7 @@ func registerHandle(auth auth.Service) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		newAccount, err := auth.ParseCredential(c)
 		if err != nil {
-			c.IndentedJSON(http.StatusInternalServerError, gin.H{
+			c.IndentedJSON(http.StatusBadRequest, gin.H{
 				"message": err.Error(),
 			})
 			return
@@ -35,7 +35,6 @@ func registerHandle(auth auth.Service) func(c *gin.Context) {
 			})
 			return
 		}
-		println("check existed")
 
 		err = auth.AddAccount(*newAccount)
 		if err != nil {
@@ -53,7 +52,7 @@ func loginHandle(auth auth.Service) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		reqAccount, err := auth.ParseCredential(c)
 		if err != nil {
-			c.IndentedJSON(http.StatusInternalServerError, gin.H{
+			c.IndentedJSON(http.StatusBadRequest, gin.H{
 				"message": err.Error(),
 			})
 		}
@@ -97,37 +96,10 @@ func loginHandle(auth auth.Service) func(c *gin.Context) {
 
 func userHandle(auth auth.Service) func(c *gin.Context) {
 	return func(c *gin.Context) {
-		cookie, err := c.Cookie("jwt")
-		if err != nil {
-			c.IndentedJSON(http.StatusInternalServerError, gin.H{
-				"message": "can not find cookies",
-			})
-			return
-		}
+		id, err := cookieAuth(c)
 
-		token, err := jwt.ParseWithClaims(cookie, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
-			return []byte(SecretKey), nil
-		})
-
-		if err != nil {
-			fmt.Println(err)
-			c.IndentedJSON(http.StatusUnauthorized, gin.H{
-				"message": "unauthenticated",
-			})
-			return
-		}
-
-		claims := token.Claims.(*jwt.StandardClaims)
-		id, err := strconv.Atoi(claims.Issuer)
-		if err != nil {
-			c.IndentedJSON(http.StatusNotAcceptable, gin.H{
-				"message": err.Error(),
-			})
-			return
-		}
-
-		println("id: ", id)
-		user, err := auth.FindUserByID(id)
+		println("id: ", *id)
+		user, err := auth.FindUserByID(*id)
 		if err != nil {
 			c.IndentedJSON(http.StatusNotFound, gin.H{
 				"message": err.Error(),
@@ -145,4 +117,37 @@ func logoutHandle(auth auth.Service) func(c *gin.Context) {
 		c.SetCookie("jwt", "", int(time.Now().Add(-time.Hour).Unix()), "/", "localhost", false, true)
 		c.IndentedJSON(http.StatusAccepted, successMsg)
 	}
+}
+
+func cookieAuth(c *gin.Context) (*int, error) {
+	cookie, err := c.Cookie("jwt")
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{
+			"message": "can not find cookies",
+		})
+		return nil, err
+	}
+
+	token, err := jwt.ParseWithClaims(cookie, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
+		return []byte(SecretKey), nil
+	})
+
+	if err != nil {
+		fmt.Println(err)
+		c.IndentedJSON(http.StatusUnauthorized, gin.H{
+			"message": "unauthenticated",
+		})
+		return nil, err
+	}
+
+	claims := token.Claims.(*jwt.StandardClaims)
+	id, err := strconv.Atoi(claims.Issuer)
+	if err != nil {
+		c.IndentedJSON(http.StatusNotAcceptable, gin.H{
+			"message": err.Error(),
+		})
+		return nil, err
+	}
+
+	return &id, nil
 }

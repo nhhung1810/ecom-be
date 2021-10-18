@@ -22,7 +22,8 @@ func uploadImageHandle(img myimg.Service) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		imgs, err := img.ParseImages(c)
 		if err != nil {
-			c.IndentedJSON(http.StatusInternalServerError, gin.H{
+			println(err.Error())
+			c.IndentedJSON(http.StatusBadRequest, gin.H{
 				"message": err.Error(),
 			})
 			return
@@ -30,6 +31,7 @@ func uploadImageHandle(img myimg.Service) func(c *gin.Context) {
 
 		err = img.UploadImage(imgs)
 		if err != nil {
+			println(err.Error())
 			c.IndentedJSON(http.StatusInternalServerError, gin.H{
 				"message": err.Error(),
 			})
