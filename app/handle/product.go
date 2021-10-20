@@ -68,3 +68,30 @@ func getAllProducts(pr product.Service) func(c *gin.Context) {
 
 	}
 }
+
+func getProductByID(pr product.Service) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		var queryProd product.Product
+		err := c.BindQuery(&queryProd)
+		if err != nil {
+			println(err.Error())
+			c.IndentedJSON(http.StatusBadRequest, errBadResquest)
+			return
+		}
+
+		println("prod id: ", queryProd.ID)
+		p, err := pr.FetchProductByID(queryProd.ID)
+		if err != nil {
+			println(err.Error())
+			c.IndentedJSON(http.StatusNotFound, gin.H{
+				"message": "not found",
+			})
+			return
+		}
+
+		c.IndentedJSON(http.StatusAccepted, gin.H{
+			"message": "success",
+			"data":    p,
+		})
+	}
+}

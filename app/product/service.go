@@ -7,14 +7,14 @@ import (
 //provide function access to db
 type Repository interface {
 	AddProduct(p Product, userid int) (*int, error)
-	FetchProduct(id int) (*Product, error)
+	FetchProductByID(id int) (*ProductImage, error)
 	FetchAllProductsByUser(id int) ([]ProductImage, error)
 }
 
 // Provide interface for product operation in handler
 type Service interface {
 	AddProduct(p Product, userid int) (*int, error)
-	FetchProduct(id int) (*Product, error)
+	FetchProductByID(id int) (*ProductImage, error)
 	ParseProduct(g *gin.Context) (*Product, error)
 	FetchAllProductsByUser(id int) ([]ProductImage, error)
 }
@@ -45,8 +45,8 @@ func (s *service) AddProduct(p Product, userid int) (*int, error) {
 	return id, nil
 }
 
-func (s *service) FetchProduct(id int) (*Product, error) {
-	p, err := s.r.FetchProduct(id)
+func (s *service) FetchProductByID(id int) (*ProductImage, error) {
+	p, err := s.r.FetchProductByID(id)
 	if err != nil {
 		return nil, err
 	}

@@ -33,12 +33,14 @@ func Handler(auth auth.Service, img myimg.Service, pr product.Service) (*gin.Eng
 	router.GET("/user", userHandle(auth))
 
 	// IMAGE HANDLE
-	router.GET("/image", imageHandle())
-	router.GET("/image/:id", getImageHandle(img))
-	router.POST("/upload/image", uploadImageHandle(img))
+	// router.GET("/image", imageHandle())
+	router.GET("/image", getImageHandle(img))
+	router.POST("/upload/image", newUploadImage(img))
 
 	// PROD HANDLE
 	router.GET("/product", getAllProducts(pr))
+	// ONLY FOR QUERY USE
+	router.GET("/product/info", getProductByID(pr))
 	router.POST("/upload/product", uploadProduct(pr))
 
 	return router, nil

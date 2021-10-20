@@ -3,13 +3,11 @@ package handle
 import (
 	"bytes"
 	myimg "ecom-be/app/image"
-	"encoding/base64"
 	"image"
 	"image/jpeg"
 	"net/http"
 	"os"
 	"strconv"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -18,78 +16,26 @@ var errInternal = gin.H{
 	"message": "internal",
 }
 
-func uploadImageHandle(img myimg.Service) func(c *gin.Context) {
-	return func(c *gin.Context) {
-		imgs, err := img.ParseImages(c)
-		if err != nil {
-			println(err.Error())
-			c.IndentedJSON(http.StatusBadRequest, gin.H{
-				"message": err.Error(),
-			})
-			return
-		}
-
-		err = img.UploadImage(imgs)
-		if err != nil {
-			println(err.Error())
-			c.IndentedJSON(http.StatusInternalServerError, gin.H{
-				"message": err.Error(),
-			})
-			return
-		}
-
-		c.IndentedJSON(http.StatusAccepted, successMsg)
-	}
+var errBadResquest = gin.H{
+	"message": "bad request",
 }
 
+// BASE ONLY QUERY
 func getImageHandle(img myimg.Service) func(c *gin.Context) {
 	return func(c *gin.Context) {
-		// no need to catch the error as the server
-		// only match this route when there are image/:id
-		id := c.Param("id")
-		img, err := img.GetImage(id)
+		var queryImg myimg.Image
+		err := c.BindQuery(&queryImg)
 		if err != nil {
-			println(err.Error())
-			c.IndentedJSON(http.StatusInternalServerError, gin.H{
-				"message": err.Error(),
+			c.IndentedJSON(http.StatusNotAcceptable, gin.H{
+				"message": "check your query",
 			})
 			return
 		}
 
-		//process the data field
-		data := img.Data
-		s := strings.Split(data, ",")
-		if len(s) <= 1 {
-			println(err.Error())
-			c.IndentedJSON(http.StatusInternalServerError, gin.H{
-				"message": ("data url error: " + data),
-			})
-			return
-		}
-
-		data = s[1] //get the base64 string
-		decodedData, err := base64.StdEncoding.DecodeString(string(data))
-		if err != nil {
-			println(err.Error())
-			c.IndentedJSON(http.StatusInternalServerError, gin.H{
-				"message": err.Error(),
-			})
-			return
-		}
-		imageReader := bytes.NewReader(decodedData)
-		serveImg, _, err := image.Decode(imageReader)
-
-		buffer := new(bytes.Buffer)
-		err = jpeg.Encode(buffer, serveImg, nil)
+		buffer, err := img.GetImage(queryImg.Index, queryImg.ProductID)
 		if err != nil {
 			println(err.Error())
 			c.IndentedJSON(http.StatusInternalServerError, errInternal)
-		}
-
-		if err != nil {
-			println(err.Error())
-			c.IndentedJSON(http.StatusInternalServerError, errInternal)
-			return
 		}
 		c.Header("Content-Type", "image/jpeg")
 		c.Header("Content-Length", strconv.Itoa(len(buffer.Bytes())))
@@ -101,7 +47,7 @@ func getImageHandle(img myimg.Service) func(c *gin.Context) {
 	}
 }
 
-// TODO: ADD SERVICE
+// ONLY FOR TESTING
 func imageHandle() func(c *gin.Context) {
 	return func(c *gin.Context) {
 		// TEST IMAGE
@@ -135,5 +81,22 @@ func imageHandle() func(c *gin.Context) {
 			println(err.Error())
 			c.IndentedJSON(http.StatusInternalServerError, errInternal)
 		}
+	}
+}
+
+// NEW UPLOAD FUNCTION WITH MULTIPART/FORM-DATA REQUEST
+func newUploadImage(img myimg.Service) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		// call the interface to handle parsing
+		images, err := img.ParseImages(c)
+		if err != nil {
+			println(err.Error())
+			c.IndentedJSON(http.StatusBadRequest, errBadResquest)
+		}
+
+		// call the interface to handle new images
+		img.UploadImage(images)
+
+		c.IndentedJSON(http.StatusCreated, successMsg)
 	}
 }

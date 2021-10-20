@@ -18,18 +18,6 @@ create table Products(
     PRIMARY KEY(id)
 );
 
-create table Images(
-    id VARCHAR(30),
-    dat text,
-    PRIMARY KEY(id)
-);
-
-create table ProductImages(
-    productid int not null REFERENCES Products(id),
-    imageid VARCHAR(30) not null REFERENCES Images(id),
-    PRIMARY KEY(imageid, productid)
-);
-
 create table ProductUser(
     productid int not null REFERENCES Products(id),
     userid int not null REFERENCES Users(id),

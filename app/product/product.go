@@ -1,7 +1,7 @@
 package product
 
 type Product struct {
-	ID          int     `json:"id"`
+	ID          int     `form:"id" json:"id"`
 	Name        string  `json:"name"`
 	Categories  string  `json:"categories"`
 	Brand       string  `json:"brand"`
@@ -13,6 +13,6 @@ type Product struct {
 }
 
 type ProductImage struct {
-	Prod    Product
-	Imageid []string
+	Prod       Product
+	ImageCount int
 }

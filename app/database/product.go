@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"ecom-be/app/product"
 	"errors"
+	"io/ioutil"
+	"strconv"
 
 	"github.com/lib/pq"
 )
@@ -47,7 +49,7 @@ func (s *Storage) AddProduct(p product.Product, userid int) (*int, error) {
 	return &id, nil
 }
 
-func (s *Storage) FetchProduct(id int) (*product.Product, error) {
+func (s *Storage) FetchProductByID(id int) (*product.ProductImage, error) {
 	var p product.Product
 	rows := s.db.QueryRow(
 		`SELECT id, name, categories, brand, price, 
@@ -62,17 +64,40 @@ func (s *Storage) FetchProduct(id int) (*product.Product, error) {
 		&p.Categories,
 		&p.Brand,
 		&p.Price,
+		&p.Size,
 		&p.Color,
 		&p.Quantity,
 		&p.Description,
 	)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, errNotExistedProduct
+			return nil, err
 		}
-		return nil, errUnknown
+		return nil, err
 	}
-	return &p, nil
+
+	//IMAGE FOLDER FETCH
+	productid := strconv.FormatInt(int64(p.ID), 10)
+	if err != nil {
+		return nil, err
+	}
+
+	files, err := ioutil.ReadDir("./images/" + productid + "/")
+	if err != nil {
+		return nil, err
+	}
+
+	count := 0
+	for _, file := range files {
+		if !file.IsDir() {
+			count++
+		}
+	}
+
+	return &product.ProductImage{
+		Prod:       p,
+		ImageCount: count,
+	}, nil
 }
 
 func (s *Storage) FetchAllProductsByUser(id int) ([]product.ProductImage, error) {
@@ -92,9 +117,8 @@ func (s *Storage) FetchAllProductsByUser(id int) ([]product.ProductImage, error)
 	defer rows.Close()
 
 	for rows.Next() {
+		// FETCH PRODUCT
 		var p product.Product
-		var imageid []string
-
 		err = rows.Scan(
 			&p.ID,
 			&p.Name,
@@ -116,33 +140,27 @@ func (s *Storage) FetchAllProductsByUser(id int) ([]product.ProductImage, error)
 			return nil, errUnknown
 		}
 
-		//IMAGE ID RETRIEVAL
-		imgrows, err := s.db.Query(
-			`SELECT imageid FROM ProductImages
-			WHERE productid = $1`,
-			p.ID,
-		)
+		//IMAGE FOLDER FETCH
+		productid := strconv.FormatInt(int64(p.ID), 10)
 		if err != nil {
 			return nil, err
 		}
-		defer imgrows.Close()
-		for imgrows.Next() {
-			var tmp string
-			err = imgrows.Scan(&tmp)
-			if err != nil {
-				println(err.Error())
-				if err == sql.ErrNoRows {
-					println(err.Error())
-					return nil, errNotExistedProduct
-				}
-				return nil, errUnknown
+
+		files, err := ioutil.ReadDir("./images/" + productid + "/")
+		if err != nil {
+			return nil, err
+		}
+
+		count := 0
+		for _, file := range files {
+			if !file.IsDir() {
+				count++
 			}
-			imageid = append(imageid, tmp)
 		}
 
 		plist = append(plist, product.ProductImage{
-			Prod:    p,
-			Imageid: imageid,
+			Prod:       p,
+			ImageCount: count,
 		})
 	}
 

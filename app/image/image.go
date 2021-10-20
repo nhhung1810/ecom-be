@@ -1,7 +1,11 @@
 package image
 
+import "mime/multipart"
+
 type Image struct {
-	ID        string `json:id`
-	ProductID int    `json:productId` // for making the ProductTable
-	Data      string `json:data`
+	// Don't use tag as this
+	// will be parsed manually
+	ProductID string                  `form:"productid" json:"-"`
+	Index     string                  `form:"id" json:"-"`
+	Data      []*multipart.FileHeader `json:"-"`
 }
