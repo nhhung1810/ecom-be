@@ -24,3 +24,9 @@ create table ProductUser(
     PRIMARY KEY(productid, userid)
 )
 
+-- create table Order(
+--     id SERIAL PRIMARY KEY,
+--     productid int not null REFERENCES Products(id),
+--     quantity int not null,
+--     color
+-- )
