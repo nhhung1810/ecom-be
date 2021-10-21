@@ -79,8 +79,46 @@ func getProductByID(pr product.Service) func(c *gin.Context) {
 			return
 		}
 
-		println("prod id: ", queryProd.ID)
 		p, err := pr.FetchProductByID(queryProd.ID)
+		if err != nil {
+			println(err.Error())
+			c.IndentedJSON(http.StatusNotFound, gin.H{
+				"message": "not found",
+			})
+			return
+		}
+
+		c.IndentedJSON(http.StatusAccepted, gin.H{
+			"message": "success",
+			"data":    p,
+		})
+	}
+}
+
+func getProductWithFilter(pr product.Service) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		type queryHandle struct {
+			Categories []string `form:"categories" binding:"required"`
+			Sizes      []string `form:"size" binding:"required"`
+			Colors     []string `form:"colors" binding:"required"`
+		}
+
+		var qh queryHandle
+		err := c.BindQuery(&qh)
+		// SO THE PROBLEM HERE IS
+		// WHEN THERE IS A NIL PARAMS
+		// THE ARRAY RETURN IS ['']
+		// AND IT BREAK THE DB CODE
+		// MAKE SURE TO LOOK FOR IT
+
+		println("Len of ctgs", len(qh.Categories))
+		if err != nil {
+			println(err.Error())
+			c.IndentedJSON(http.StatusBadRequest, errBadResquest)
+			return
+		}
+
+		p, err := pr.FetchAllProductsWithFilter(qh.Categories, qh.Sizes, qh.Colors)
 		if err != nil {
 			println(err.Error())
 			c.IndentedJSON(http.StatusNotFound, gin.H{
