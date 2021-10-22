@@ -175,7 +175,7 @@ func (s *Storage) FetchAllProductsByCtg(ctgs []string) ([]product.ProductImage, 
 func (s *Storage) FetchAllProductsWithFilter(ctgs []string, sizes []string, colors []string) ([]product.ProductImage, error) {
 	var plist []product.ProductImage
 	println("LENs OF ", len(ctgs), len(sizes), len(colors))
-	println(ctgs[0], sizes[0], colors[0])
+	// println(ctgs[0], sizes[0], colors[0])
 	sqlQuery := `
 		SELECT 
 			id, name, categories, brand, price, 
@@ -248,20 +248,24 @@ func (s *Storage) FetchAllProductsWithFilter(ctgs []string, sizes []string, colo
 func handleNullArray(ctgs []string,
 	sizes []string, colors []string) (interface{}, interface{}, interface{}) {
 	var ctgsParam, sizeParam, colorsParam interface{}
-	if len(ctgs) > 0 {
-		ctgsParam = pq.Array(ctgs)
-	} else {
+
+	if (len(ctgs) == 1 && ctgs[0] == "") || (len(ctgs) == 0) {
 		ctgsParam = "{}"
-	}
-	if sizes[0] != "" {
-		sizeParam = pq.Array(sizes)
 	} else {
+		ctgsParam = pq.Array(ctgs)
+	}
+
+	if (len(sizes) == 1 && sizes[0] == "") || (len(sizes) == 0) {
 		sizeParam = "{}"
-	}
-	if colors[0] != "" {
-		colorsParam = pq.Array(colors)
 	} else {
-		colorsParam = "{}"
+		sizeParam = pq.Array(sizes)
 	}
+
+	if (len(colors) == 1 && colors[0] == "") || (len(colors) == 0) {
+		colorsParam = "{}"
+	} else {
+		colorsParam = pq.Array(colors)
+	}
+
 	return ctgsParam, sizeParam, colorsParam
 }

@@ -23,11 +23,18 @@ create table ProductUser(
     productid int not null REFERENCES Products(id),
     userid int not null REFERENCES Users(id),
     PRIMARY KEY(productid, userid)
-)
+);
 
--- create table Order(
---     id SERIAL PRIMARY KEY,
---     productid int not null REFERENCES Products(id),
---     quantity int not null,
---     color
--- )
+create table Orders(
+    id SERIAL PRIMARY KEY,
+    userid int not null REFERENCES Users(id),
+    status int not NULL DEFAULT 0
+);
+
+create table ProductsOrder(
+    orderid int not null REFERENCES Orders(id),
+    productid int not null REFERENCES Products(id),
+    quantity int not null,
+    price int not null,
+    PRIMARY KEY(orderid, productid)
+);

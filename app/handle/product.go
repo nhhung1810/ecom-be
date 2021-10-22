@@ -99,19 +99,15 @@ func getProductWithFilter(pr product.Service) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		type queryHandle struct {
 			Categories []string `form:"categories" binding:"required"`
-			Sizes      []string `form:"size" binding:"required"`
-			Colors     []string `form:"colors" binding:"required"`
+			Sizes      []string `form:"size"`
+			Colors     []string `form:"colors"`
 		}
 
 		var qh queryHandle
-		err := c.BindQuery(&qh)
-		// SO THE PROBLEM HERE IS
-		// WHEN THERE IS A NIL PARAMS
-		// THE ARRAY RETURN IS ['']
-		// AND IT BREAK THE DB CODE
-		// MAKE SURE TO LOOK FOR IT
-
-		println("Len of ctgs", len(qh.Categories))
+		err := c.ShouldBindQuery(&qh)
+		if err != nil {
+			println(err.Error())
+		}
 		if err != nil {
 			println(err.Error())
 			c.IndentedJSON(http.StatusBadRequest, errBadResquest)
