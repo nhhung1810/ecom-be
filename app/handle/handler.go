@@ -4,13 +4,14 @@ import (
 	"ecom-be/app/auth"
 	"ecom-be/app/config"
 	myimg "ecom-be/app/image"
+	"ecom-be/app/order"
 	"ecom-be/app/product"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
-func Handler(auth auth.Service, img myimg.Service, pr product.Service) (*gin.Engine, error) {
+func Handler(auth auth.Service, img myimg.Service, pr product.Service, or order.Service) (*gin.Engine, error) {
 	// TODO: Handle error here
 	router := gin.Default()
 
@@ -43,6 +44,9 @@ func Handler(auth auth.Service, img myimg.Service, pr product.Service) (*gin.Eng
 	// ONLY FOR QUERY USE
 	router.GET("/product/info", getProductByID(pr))
 	router.POST("/upload/product", uploadProduct(pr))
+
+	// ORDER
+	router.POST("/upload/order", uploadOrder(or))
 
 	return router, nil
 }

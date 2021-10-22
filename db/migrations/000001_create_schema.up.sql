@@ -35,6 +35,11 @@ create table ProductsOrder(
     orderid int not null REFERENCES Orders(id),
     productid int not null REFERENCES Products(id),
     quantity int not null,
-    price int not null,
+    price real not null,
+    color VARCHAR(50) not null,
+    size VARCHAR(50) not null,
     PRIMARY KEY(orderid, productid)
 );
+
+INSERT INTO ProductsOrder (orderid, productid, quantity, price, color, size)
+VALUES ()
