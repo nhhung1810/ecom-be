@@ -6,13 +6,13 @@ create table Users (
 );
 
 create table Products(
-    id SERIAL not NULL, 
+    id SERIAL not NULL,
     name VARCHAR(100) NOT NULL,
-    categories VARCHAR(200)[] NOT NULL,
+    categories VARCHAR(200) [] NOT NULL,
     brand VARCHAR(50) NOT NULL,
     price real not null,
-    size VARCHAR(50)[] not null,
-    color VARCHAR(50)[] not null,
+    size VARCHAR(50) [] not null,
+    color VARCHAR(50) [] not null,
     quantity int not null,
     description VARCHAR(1000),
     created_date date DEFAULT current_date,
@@ -25,21 +25,59 @@ create table ProductUser(
     PRIMARY KEY(productid, userid)
 );
 
-create table Orders(
-    id SERIAL PRIMARY KEY,
-    userid int not null REFERENCES Users(id),
-    status int not NULL DEFAULT 0
-);
+-- create table Orders(
+--     id SERIAL PRIMARY KEY,
+--     userid int not null REFERENCES Users(id),
+--     status int not NULL DEFAULT 0
+-- );
 
 create table ProductsOrder(
-    orderid int not null REFERENCES Orders(id),
+    orderid SERIAL PRIMARY KEY,
+    userid int not null REFERENCES Users(id),
+    status VARCHAR(10) not null DEFAULT 'Pending',
     productid int not null REFERENCES Products(id),
     quantity int not null,
     price real not null,
     color VARCHAR(50) not null,
-    size VARCHAR(50) not null,
-    PRIMARY KEY(orderid, productid)
+    size VARCHAR(50) not null
+    created_date date DEFAULT current_date,
 );
 
-INSERT INTO ProductsOrder (orderid, productid, quantity, price, color, size)
-VALUES ()
+-- INSERT INTO ProductsOrder(userid, productid, quantity, price, color, size)
+-- VALUES ($1, $2, $3, $4, $5, $6) RETURNING orderid
+
+
+-- EXCUTE EACH OF THIS IN ISOLATION AND IN ORDER
+-- FOR UNKNOW REASON, IT WORK PERFECTLY BUT THE 
+-- PARSER DON'T UNDERSTAND IT
+CREATE OR REPLACE FUNCTION find_remain(integer) RETURNS integer
+    AS '
+		select (max(p.quantity) - sum(ps.quantity)) as remaining from products as p
+		join productsorder as ps on p.id = ps.productid
+		WHERE p.id = $1
+		GROUP BY p.id;
+	'
+    LANGUAGE SQL
+    IMMUTABLE
+    RETURNS NULL ON NULL INPUT;
+
+-- SELECT * FROM find_remain(1);
+
+CREATE OR REPLACE FUNCTION check_insert() 
+   RETURNS TRIGGER 
+   LANGUAGE PLPGSQL
+AS $$
+BEGIN
+   if NEW.quantity > find_remain(1) THEN
+   		RAISE EXCEPTION 'Quantity limit exceed';
+   END IF;
+   
+   RETURN NEW;
+END;
+$$
+
+CREATE TRIGGER check_quantity
+	BEFORE INSERT OR UPDATE
+	ON productsorder
+	FOR EACH ROW 
+	EXECUTE PROCEDURE 

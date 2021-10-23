@@ -54,7 +54,7 @@ func (s *Storage) FetchProductByID(id int) (*product.ProductImage, error) {
 	var p product.Product
 	rows := s.db.QueryRow(
 		`SELECT id, name, categories, brand, price, 
-				size, color, quantity, description
+				size, color, quantity, description, created_date::timestamp
 		FROM Products WHERE id = $1`,
 		id,
 	)
@@ -69,7 +69,9 @@ func (s *Storage) FetchProductByID(id int) (*product.ProductImage, error) {
 		pq.Array(&p.Color),
 		&p.Quantity,
 		&p.Description,
+		&p.CreatedDate,
 	)
+
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, err
@@ -105,7 +107,7 @@ func (s *Storage) FetchAllProductsByUser(id int) ([]product.ProductImage, error)
 	var plist []product.ProductImage
 	rows, err := s.db.Query(
 		`SELECT id, name, categories, brand, price, 
-				size, color, quantity, description
+				size, color, quantity, description, created_date::timestamp
 		FROM Products as p
 		JOIN ProductUser AS pu ON p.id = pu.productid
 		WHERE pu.userid = $1`,
@@ -130,6 +132,7 @@ func (s *Storage) FetchAllProductsByUser(id int) ([]product.ProductImage, error)
 			pq.Array(&p.Color),
 			&p.Quantity,
 			&p.Description,
+			&p.CreatedDate,
 		)
 
 		if err != nil {
@@ -179,7 +182,7 @@ func (s *Storage) FetchAllProductsWithFilter(ctgs []string, sizes []string, colo
 	sqlQuery := `
 		SELECT 
 			id, name, categories, brand, price, 
-			size, color, quantity, description
+			size, color, quantity, description, created_date::timestamp
 		FROM products as p
 		WHERE $1 <@ p.categories
 		AND $2 <@ p.size
@@ -204,6 +207,7 @@ func (s *Storage) FetchAllProductsWithFilter(ctgs []string, sizes []string, colo
 			pq.Array(&p.Color),
 			&p.Quantity,
 			&p.Description,
+			&p.CreatedDate,
 		)
 
 		if err != nil {
