@@ -47,6 +47,11 @@ func Handler(auth auth.Service, img myimg.Service, pr product.Service, or order.
 
 	// ORDER
 	router.POST("/upload/order", uploadOrder(or))
+	router.GET("/order", getAllOrderByProductID(or))
+
+	// PRODUCT ORDER FOR SELLER DASHBOARD
+	router.GET("/seller/product", getProductWithOrder(pr))
+	router.GET("/seller/order", getAllOrderBySellerID(or))
 
 	return router, nil
 }

@@ -129,3 +129,28 @@ func getProductWithFilter(pr product.Service) func(c *gin.Context) {
 		})
 	}
 }
+
+func getProductWithOrder(pr product.Service) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		userid, err := cookieAuth(c)
+		if err != nil {
+			c.IndentedJSON(http.StatusUnauthorized, gin.H{
+				"message": err.Error(),
+			})
+			return
+		}
+
+		plist, err := pr.FetchAllProductsWithOrderInfo(*userid)
+		if err != nil {
+			println(err.Error())
+			c.IndentedJSON(http.StatusInternalServerError, errInternal)
+			return
+		}
+
+		c.IndentedJSON(http.StatusAccepted, gin.H{
+			"message": "success",
+			"data":    plist,
+		})
+
+	}
+}

@@ -115,6 +115,7 @@ func (s *Storage) FetchAllProductsByUser(id int) ([]product.ProductImage, error)
 	)
 
 	if err != nil {
+		println(err.Error())
 		return nil, err
 	}
 	defer rows.Close()
@@ -243,6 +244,54 @@ func (s *Storage) FetchAllProductsWithFilter(ctgs []string, sizes []string, colo
 		})
 	}
 
+	return plist, nil
+}
+
+func (s *Storage) FetchAllProductsWithOrderInfo(userid int) ([]product.ProductWithOrderInfo, error) {
+	// TODO: ADD PAGING
+	var plist []product.ProductWithOrderInfo
+	sqlQuery :=
+		`SELECT 
+		p.id, p.name, p.price, p.quantity as capacity, 
+		p.categories, p.created_date::timestamp, 
+		COALESCE(sum(ps.quantity), 0) as sold
+	FROM PRODUCTS AS p
+	LEFT JOIN ProductsOrder as ps ON p.id = ps.productid
+	JOIN ProductUser as pu on pu.productid = p.id
+	WHERE pu.userid = $1
+	GROUP BY p.id, p.name, p.quantity, p.categories, p.created_date
+	ORDER BY p.created_date
+	LIMIT $2
+	OFFSET $3`
+
+	rows, err := s.db.Query(sqlQuery, userid, 5, 0)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var p product.ProductWithOrderInfo
+		rows.Scan(
+			&p.ID,
+			&p.Name,
+			&p.Price,
+			&p.Capacity,
+			pq.Array(&p.Categories),
+			&p.CreatedDate,
+			&p.Sold,
+		)
+
+		if err != nil {
+			println(err.Error())
+			if err == sql.ErrNoRows {
+				println(err.Error())
+				return nil, errNotExistedProduct
+			}
+			return nil, errUnknown
+		}
+		plist = append(plist, p)
+	}
 	return plist, nil
 }
 

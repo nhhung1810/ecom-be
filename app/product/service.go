@@ -12,6 +12,7 @@ type Repository interface {
 	FetchAllProductsByCtg(ctg []string) ([]ProductImage, error)
 	FetchAllProductsWithFilter(ctgs []string,
 		sizes []string, colors []string) ([]ProductImage, error)
+	FetchAllProductsWithOrderInfo(userid int) ([]ProductWithOrderInfo, error)
 }
 
 // Provide interface for product operation in handler
@@ -23,6 +24,7 @@ type Service interface {
 	FetchAllProductsByCtg(ctg []string) ([]ProductImage, error)
 	FetchAllProductsWithFilter(ctgs []string,
 		sizes []string, colors []string) ([]ProductImage, error)
+	FetchAllProductsWithOrderInfo(userid int) ([]ProductWithOrderInfo, error)
 }
 
 // Abstract layer, implementing the service
@@ -76,6 +78,14 @@ func (s *service) FetchAllProductsByCtg(ctg []string) ([]ProductImage, error) {
 func (s *service) FetchAllProductsWithFilter(ctgs []string,
 	sizes []string, colors []string) ([]ProductImage, error) {
 	p, err := s.r.FetchAllProductsWithFilter(ctgs, sizes, colors)
+	if err != nil {
+		return nil, err
+	}
+	return p, nil
+}
+
+func (s *service) FetchAllProductsWithOrderInfo(userid int) ([]ProductWithOrderInfo, error) {
+	p, err := s.r.FetchAllProductsWithOrderInfo(userid)
 	if err != nil {
 		return nil, err
 	}

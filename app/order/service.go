@@ -7,12 +7,16 @@ import (
 type Repository interface {
 	AddOrder(order []ProductOrder) error
 	FetchAllOrder() ([]ProductOrder, error)
+	FetchAllOrderByProductID(id int) ([]ProductOrder, error)
+	FetchAllOrderBySellerID(id int) ([]OrderBySeller, error)
 }
 
 type Service interface {
 	AddOrder(order []ProductOrder) error
 	FetchAllOrder() ([]ProductOrder, error)
 	ParseOrder(c *gin.Context, userid int) ([]ProductOrder, error)
+	FetchAllOrderByProductID(id int) ([]ProductOrder, error)
+	FetchAllOrderBySellerID(id int) ([]OrderBySeller, error)
 }
 
 type service struct {
@@ -35,6 +39,14 @@ func (s *service) FetchAllOrder() ([]ProductOrder, error) {
 	return nil, nil
 }
 
+func (s *service) FetchAllOrderByProductID(id int) ([]ProductOrder, error) {
+	orders, err := s.r.FetchAllOrderByProductID(id)
+	if err != nil {
+		return nil, err
+	}
+	return orders, nil
+}
+
 func (s *service) ParseOrder(c *gin.Context, userid int) ([]ProductOrder, error) {
 	var ord []ProductOrder
 	err := c.Bind(&ord)
@@ -45,4 +57,12 @@ func (s *service) ParseOrder(c *gin.Context, userid int) ([]ProductOrder, error)
 		ord[i].UserID = userid
 	}
 	return ord, nil
+}
+
+func (s *service) FetchAllOrderBySellerID(id int) ([]OrderBySeller, error) {
+	p, err := s.r.FetchAllOrderBySellerID(id)
+	if err != nil {
+		return nil, err
+	}
+	return p, err
 }
