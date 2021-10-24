@@ -53,5 +53,8 @@ func Handler(auth auth.Service, img myimg.Service, pr product.Service, or order.
 	router.GET("/seller/product", getProductWithOrder(pr))
 	router.GET("/seller/order", getAllOrderBySellerID(or))
 
+	// COUNT FOR PAGINGATE
+	router.GET("/count/order", countAllOrderbySellerID(or))
+
 	return router, nil
 }

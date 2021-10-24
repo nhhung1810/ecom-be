@@ -80,7 +80,7 @@ func (s *Storage) FetchAllOrderByProductID(id int) ([]order.ProductOrder, error)
 	return olist, nil
 }
 
-func (s *Storage) FetchAllOrderBySellerID(id int) ([]order.OrderBySeller, error) {
+func (s *Storage) FetchAllOrderBySellerID(id int, limit int, offset int) ([]order.OrderBySeller, error) {
 	var olist []order.OrderBySeller
 	sqlQuery := `
 	SELECT 
@@ -91,10 +91,11 @@ func (s *Storage) FetchAllOrderBySellerID(id int) ([]order.OrderBySeller, error)
 	JOIN ProductUser as pu on ps.productid = pu.productid
 	JOIN Products as p on p.id = ps.productid
 	WHERE pu.userid = $1
+	ORDER BY ps.orderid asc
 	LIMIT $2
 	OFFSET $3
 	`
-	rows, err := s.db.Query(sqlQuery, id, 8, 0)
+	rows, err := s.db.Query(sqlQuery, id, limit, offset)
 	if err != nil {
 		println(err.Error())
 		return nil, err
@@ -128,4 +129,23 @@ func (s *Storage) FetchAllOrderBySellerID(id int) ([]order.OrderBySeller, error)
 	}
 
 	return olist, nil
+}
+
+func (s *Storage) CountAllOrderbySellerID(id int) (*int, error) {
+	var count int
+	sqlQuery := `
+	SELECT 
+		COUNT(ps.orderid) AS count_id
+	FROM Productsorder as ps
+	JOIN ProductUser as pu on ps.productid = pu.productid
+	JOIN Products as p on p.id = ps.productid
+	WHERE pu.userid = $1
+	`
+	err := s.db.QueryRow(sqlQuery, id).Scan(&count)
+	if err, ok := err.(*pq.Error); ok {
+		errStr := "pq error:" + err.Code.Name()
+		return nil, errors.New("count order by seller id error: " + errStr)
+	}
+
+	return &count, nil
 }

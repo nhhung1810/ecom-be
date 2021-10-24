@@ -78,7 +78,19 @@ func getAllOrderBySellerID(or order.Service) func(c *gin.Context) {
 			return
 		}
 
-		orders, err := or.FetchAllOrderBySellerID(*userid)
+		type Paging struct {
+			Limit  int `form:"limit"`
+			Offset int `form:"offset"`
+		}
+
+		var paging Paging
+		err = c.ShouldBindQuery(&paging)
+		if err != nil {
+			paging.Limit = 10
+			paging.Offset = 0
+		}
+
+		orders, err := or.FetchAllOrderBySellerID(*userid, paging.Limit, paging.Offset)
 		if err != nil {
 			c.IndentedJSON(http.StatusInternalServerError, errInternal)
 			return
@@ -87,6 +99,28 @@ func getAllOrderBySellerID(or order.Service) func(c *gin.Context) {
 		c.IndentedJSON(http.StatusAccepted, gin.H{
 			"message": "success",
 			"data":    orders,
+		})
+	}
+}
+
+func countAllOrderbySellerID(or order.Service) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		userid, err := cookieAuth(c)
+		if err != nil {
+			c.IndentedJSON(http.StatusUnauthorized, errUnauthorized)
+			return
+		}
+
+		count, err := or.CountAllOrderbySellerID(*userid)
+		if err != nil {
+			println(err.Error())
+			c.IndentedJSON(http.StatusInternalServerError, errInternal)
+			return
+		}
+
+		c.IndentedJSON(http.StatusAccepted, gin.H{
+			"message": "success",
+			"count":   &count,
 		})
 	}
 }

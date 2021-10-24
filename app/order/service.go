@@ -8,7 +8,8 @@ type Repository interface {
 	AddOrder(order []ProductOrder) error
 	FetchAllOrder() ([]ProductOrder, error)
 	FetchAllOrderByProductID(id int) ([]ProductOrder, error)
-	FetchAllOrderBySellerID(id int) ([]OrderBySeller, error)
+	CountAllOrderbySellerID(id int) (*int, error)
+	FetchAllOrderBySellerID(id int, limit int, offset int) ([]OrderBySeller, error)
 }
 
 type Service interface {
@@ -16,7 +17,8 @@ type Service interface {
 	FetchAllOrder() ([]ProductOrder, error)
 	ParseOrder(c *gin.Context, userid int) ([]ProductOrder, error)
 	FetchAllOrderByProductID(id int) ([]ProductOrder, error)
-	FetchAllOrderBySellerID(id int) ([]OrderBySeller, error)
+	CountAllOrderbySellerID(id int) (*int, error)
+	FetchAllOrderBySellerID(id int, limit int, offset int) ([]OrderBySeller, error)
 }
 
 type service struct {
@@ -59,10 +61,18 @@ func (s *service) ParseOrder(c *gin.Context, userid int) ([]ProductOrder, error)
 	return ord, nil
 }
 
-func (s *service) FetchAllOrderBySellerID(id int) ([]OrderBySeller, error) {
-	p, err := s.r.FetchAllOrderBySellerID(id)
+func (s *service) FetchAllOrderBySellerID(id int, limit int, offset int) ([]OrderBySeller, error) {
+	p, err := s.r.FetchAllOrderBySellerID(id, limit, offset)
 	if err != nil {
 		return nil, err
 	}
 	return p, err
+}
+
+func (s *service) CountAllOrderbySellerID(id int) (*int, error) {
+	count, err := s.r.CountAllOrderbySellerID(id)
+	if err != nil {
+		return nil, err
+	}
+	return count, nil
 }
