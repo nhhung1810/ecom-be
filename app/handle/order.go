@@ -1,6 +1,7 @@
 package handle
 
 import (
+	"ecom-be/app/config"
 	"ecom-be/app/order"
 	"net/http"
 
@@ -20,25 +21,25 @@ func uploadOrder(or order.Service) func(c *gin.Context) {
 		userid, err := cookieAuth(c)
 		if err != nil {
 			println(err.Error())
-			c.IndentedJSON(http.StatusUnauthorized, errUnauthorized)
+			c.JSON(http.StatusUnauthorized, errUnauthorized)
 			return
 		}
 		println("userid", userid)
 		ord, err := or.ParseOrder(c, *userid)
 		if err != nil {
 			println(err.Error())
-			c.IndentedJSON(http.StatusBadRequest, errBadResquest)
+			c.JSON(http.StatusBadRequest, errBadResquest)
 			return
 		}
 
 		err = or.AddOrder(ord)
 		if err != nil {
 			println(err.Error())
-			c.IndentedJSON(http.StatusInternalServerError, errInternal)
+			c.JSON(http.StatusInternalServerError, errInternal)
 			return
 		}
 
-		c.IndentedJSON(http.StatusAccepted, successMsg)
+		c.JSON(http.StatusAccepted, successMsg)
 	}
 }
 
@@ -52,18 +53,18 @@ func getAllOrderByProductID(or order.Service) func(c *gin.Context) {
 		err := c.ShouldBindQuery(&qh)
 		if err != nil {
 			println(err.Error())
-			c.IndentedJSON(http.StatusBadRequest, errBadResquest)
+			c.JSON(http.StatusBadRequest, errBadResquest)
 			return
 		}
 
 		orders, err := or.FetchAllOrderByProductID(qh.ProductID)
 		if err != nil {
 			println(err.Error())
-			c.IndentedJSON(http.StatusNotFound, errNotFound)
+			c.JSON(http.StatusNotFound, errNotFound)
 			return
 		}
 
-		c.IndentedJSON(http.StatusAccepted, gin.H{
+		c.JSON(http.StatusAccepted, gin.H{
 			"message": "success",
 			"data":    orders,
 		})
@@ -74,7 +75,7 @@ func getAllOrderBySellerID(or order.Service) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		userid, err := cookieAuth(c)
 		if err != nil {
-			c.IndentedJSON(http.StatusUnauthorized, errUnauthorized)
+			c.JSON(http.StatusUnauthorized, errUnauthorized)
 			return
 		}
 
@@ -92,11 +93,11 @@ func getAllOrderBySellerID(or order.Service) func(c *gin.Context) {
 
 		orders, err := or.FetchAllOrderBySellerID(*userid, paging.Limit, paging.Offset)
 		if err != nil {
-			c.IndentedJSON(http.StatusInternalServerError, errInternal)
+			c.JSON(http.StatusInternalServerError, errInternal)
 			return
 		}
 
-		c.IndentedJSON(http.StatusAccepted, gin.H{
+		c.JSON(http.StatusAccepted, gin.H{
 			"message": "success",
 			"data":    orders,
 		})
@@ -107,20 +108,52 @@ func countAllOrderbySellerID(or order.Service) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		userid, err := cookieAuth(c)
 		if err != nil {
-			c.IndentedJSON(http.StatusUnauthorized, errUnauthorized)
+			c.JSON(http.StatusUnauthorized, errUnauthorized)
 			return
 		}
 
 		count, err := or.CountAllOrderbySellerID(*userid)
 		if err != nil {
 			println(err.Error())
-			c.IndentedJSON(http.StatusInternalServerError, errInternal)
+			c.JSON(http.StatusInternalServerError, errInternal)
 			return
 		}
 
-		c.IndentedJSON(http.StatusAccepted, gin.H{
+		c.JSON(http.StatusAccepted, gin.H{
 			"message": "success",
 			"count":   &count,
 		})
+	}
+}
+
+func updateOrderStatus(or order.Service) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		_, err := cookieAuth(c)
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, errUnauthorized)
+			return
+		}
+
+		type QueryHandle struct {
+			OrderId    int `form:"orderid"`
+			StatusCode int `form:"status"`
+		}
+
+		var qh QueryHandle
+		err = c.ShouldBindQuery(&qh)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, errBadResquest)
+			return
+		}
+		println(qh.OrderId)
+		println(qh.StatusCode)
+		err = or.UpdateStatusByOrder(qh.OrderId,
+			config.DefaultConfig.OrderStatus[qh.StatusCode%3])
+		if err != nil {
+			c.JSON(http.StatusNotFound, errNotFound)
+			return
+		}
+
+		c.JSON(http.StatusAccepted, successMsg)
 	}
 }

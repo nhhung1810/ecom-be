@@ -12,7 +12,7 @@ func uploadProduct(pr product.Service) func(c *gin.Context) {
 		userid, err := cookieAuth(c)
 		println(*userid)
 		if err != nil {
-			c.IndentedJSON(http.StatusUnauthorized, gin.H{
+			c.JSON(http.StatusUnauthorized, gin.H{
 				"message": err.Error(),
 			})
 		}
@@ -21,7 +21,7 @@ func uploadProduct(pr product.Service) func(c *gin.Context) {
 		prod, err := pr.ParseProduct(c)
 		if err != nil {
 			println(err.Error())
-			c.IndentedJSON(http.StatusBadRequest, gin.H{
+			c.JSON(http.StatusBadRequest, gin.H{
 				"message": err.Error(),
 			})
 			return
@@ -30,13 +30,13 @@ func uploadProduct(pr product.Service) func(c *gin.Context) {
 		id, err := pr.AddProduct(*prod, *userid)
 		if err != nil {
 			println(err.Error())
-			c.IndentedJSON(http.StatusInternalServerError, gin.H{
+			c.JSON(http.StatusInternalServerError, gin.H{
 				"message": err.Error(),
 			})
 			return
 		}
 		println(*id)
-		c.IndentedJSON(http.StatusCreated, gin.H{
+		c.JSON(http.StatusCreated, gin.H{
 			"message": "success",
 			"id":      *id,
 		})
@@ -48,7 +48,7 @@ func getAllProducts(pr product.Service) func(c *gin.Context) {
 		userid, err := cookieAuth(c)
 		println(*userid)
 		if err != nil {
-			c.IndentedJSON(http.StatusUnauthorized, gin.H{
+			c.JSON(http.StatusUnauthorized, gin.H{
 				"message": err.Error(),
 			})
 		}
@@ -56,12 +56,11 @@ func getAllProducts(pr product.Service) func(c *gin.Context) {
 		plist, err := pr.FetchAllProductsByUser(*userid)
 		if err != nil {
 			println(err.Error())
-			c.IndentedJSON(http.StatusNotFound, gin.H{
+			c.JSON(http.StatusNotFound, gin.H{
 				"message": err.Error(),
 			})
 		}
-
-		c.IndentedJSON(http.StatusAccepted, gin.H{
+		c.JSON(http.StatusAccepted, gin.H{
 			"message":  "success",
 			"products": plist,
 		})
@@ -75,20 +74,20 @@ func getProductByID(pr product.Service) func(c *gin.Context) {
 		err := c.BindQuery(&queryProd)
 		if err != nil {
 			println(err.Error())
-			c.IndentedJSON(http.StatusBadRequest, errBadResquest)
+			c.JSON(http.StatusBadRequest, errBadResquest)
 			return
 		}
 
 		p, err := pr.FetchProductByID(queryProd.ID)
 		if err != nil {
 			println(err.Error())
-			c.IndentedJSON(http.StatusNotFound, gin.H{
+			c.JSON(http.StatusNotFound, gin.H{
 				"message": "not found",
 			})
 			return
 		}
 
-		c.IndentedJSON(http.StatusAccepted, gin.H{
+		c.JSON(http.StatusAccepted, gin.H{
 			"message": "success",
 			"data":    p,
 		})
@@ -110,20 +109,20 @@ func getProductWithFilter(pr product.Service) func(c *gin.Context) {
 		}
 		if err != nil {
 			println(err.Error())
-			c.IndentedJSON(http.StatusBadRequest, errBadResquest)
+			c.JSON(http.StatusBadRequest, errBadResquest)
 			return
 		}
 
 		p, err := pr.FetchAllProductsWithFilter(qh.Categories, qh.Sizes, qh.Colors)
 		if err != nil {
 			println(err.Error())
-			c.IndentedJSON(http.StatusNotFound, gin.H{
+			c.JSON(http.StatusNotFound, gin.H{
 				"message": "not found",
 			})
 			return
 		}
 
-		c.IndentedJSON(http.StatusAccepted, gin.H{
+		c.JSON(http.StatusAccepted, gin.H{
 			"message": "success",
 			"data":    p,
 		})
@@ -134,7 +133,7 @@ func getProductWithOrder(pr product.Service) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		userid, err := cookieAuth(c)
 		if err != nil {
-			c.IndentedJSON(http.StatusUnauthorized, gin.H{
+			c.JSON(http.StatusUnauthorized, gin.H{
 				"message": err.Error(),
 			})
 			return
@@ -143,11 +142,11 @@ func getProductWithOrder(pr product.Service) func(c *gin.Context) {
 		plist, err := pr.FetchAllProductsWithOrderInfo(*userid)
 		if err != nil {
 			println(err.Error())
-			c.IndentedJSON(http.StatusInternalServerError, errInternal)
+			c.JSON(http.StatusInternalServerError, errInternal)
 			return
 		}
 
-		c.IndentedJSON(http.StatusAccepted, gin.H{
+		c.JSON(http.StatusAccepted, gin.H{
 			"message": "success",
 			"data":    plist,
 		})

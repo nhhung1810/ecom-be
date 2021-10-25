@@ -12,7 +12,6 @@ import (
 )
 
 func Handler(auth auth.Service, img myimg.Service, pr product.Service, or order.Service) (*gin.Engine, error) {
-	// TODO: Handle error here
 	router := gin.Default()
 
 	corConfig := cors.DefaultConfig()
@@ -36,17 +35,17 @@ func Handler(auth auth.Service, img myimg.Service, pr product.Service, or order.
 	// IMAGE HANDLE
 	// router.GET("/image", imageHandle())
 	router.GET("/image", getImageHandle(img))
-	router.POST("/upload/image", newUploadImage(img))
+	router.POST("/image/upload", newUploadImage(img))
 
 	// PROD HANDLE
 	router.GET("/product", getAllProducts(pr))
 	router.GET("/product/q", getProductWithFilter(pr))
 	// ONLY FOR QUERY USE
 	router.GET("/product/info", getProductByID(pr))
-	router.POST("/upload/product", uploadProduct(pr))
+	router.POST("/product/upload", uploadProduct(pr))
 
 	// ORDER
-	router.POST("/upload/order", uploadOrder(or))
+	router.POST("/order/upload", uploadOrder(or))
 	router.GET("/order", getAllOrderByProductID(or))
 
 	// PRODUCT ORDER FOR SELLER DASHBOARD
@@ -54,7 +53,10 @@ func Handler(auth auth.Service, img myimg.Service, pr product.Service, or order.
 	router.GET("/seller/order", getAllOrderBySellerID(or))
 
 	// COUNT FOR PAGINGATE
-	router.GET("/count/order", countAllOrderbySellerID(or))
+	router.GET("/order/count", countAllOrderbySellerID(or))
+
+	// UPDATE STATUS
+	router.POST("/order/status", updateOrderStatus(or))
 
 	return router, nil
 }

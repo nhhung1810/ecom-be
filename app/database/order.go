@@ -149,3 +149,22 @@ func (s *Storage) CountAllOrderbySellerID(id int) (*int, error) {
 
 	return &count, nil
 }
+
+func (s *Storage) UpdateStatusByOrder(id int, status string) error {
+	println(status)
+	println(id)
+	var orderid int
+	sqlQuery := `
+	UPDATE ProductsOrder
+	SET status = $1
+	WHERE orderid = $2 
+	RETURNING orderid
+	`
+
+	err := s.db.QueryRow(sqlQuery, status, id).Scan(&orderid)
+	if err, ok := err.(*pq.Error); ok {
+		errStr := "pq error:" + err.Code.Name()
+		return errors.New("update order status error: " + errStr)
+	}
+	return nil
+}

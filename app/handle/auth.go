@@ -22,7 +22,7 @@ func registerHandle(auth auth.Service) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		newAccount, err := auth.ParseCredential(c)
 		if err != nil {
-			c.IndentedJSON(http.StatusBadRequest, gin.H{
+			c.JSON(http.StatusBadRequest, gin.H{
 				"message": err.Error(),
 			})
 			return
@@ -30,7 +30,7 @@ func registerHandle(auth auth.Service) func(c *gin.Context) {
 
 		_, err = auth.CheckExisted(*newAccount)
 		if err == nil {
-			c.IndentedJSON(http.StatusBadRequest, gin.H{
+			c.JSON(http.StatusBadRequest, gin.H{
 				"message": "account existed",
 			})
 			return
@@ -38,13 +38,13 @@ func registerHandle(auth auth.Service) func(c *gin.Context) {
 
 		err = auth.AddAccount(*newAccount)
 		if err != nil {
-			c.IndentedJSON(http.StatusNotAcceptable, gin.H{
+			c.JSON(http.StatusNotAcceptable, gin.H{
 				"message": err.Error(),
 			})
 			return
 		}
 
-		c.IndentedJSON(http.StatusCreated, successMsg)
+		c.JSON(http.StatusCreated, successMsg)
 	}
 }
 
@@ -52,21 +52,21 @@ func loginHandle(auth auth.Service) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		reqAccount, err := auth.ParseCredential(c)
 		if err != nil {
-			c.IndentedJSON(http.StatusBadRequest, gin.H{
+			c.JSON(http.StatusBadRequest, gin.H{
 				"message": err.Error(),
 			})
 		}
 
 		user, err := auth.CheckExisted(*reqAccount)
 		if err != nil {
-			c.IndentedJSON(http.StatusNotFound, gin.H{
+			c.JSON(http.StatusNotFound, gin.H{
 				"message": err.Error(),
 			})
 			return
 		}
 
 		if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(reqAccount.Password)); err != nil {
-			c.IndentedJSON(http.StatusUnauthorized, gin.H{
+			c.JSON(http.StatusUnauthorized, gin.H{
 				"message": "Authentication failed. Please check your password!",
 			})
 			return
@@ -82,7 +82,7 @@ func loginHandle(auth auth.Service) func(c *gin.Context) {
 		token, err := claims.SignedString([]byte(SecretKey))
 		if err != nil {
 			fmt.Println(err)
-			c.IndentedJSON(http.StatusInternalServerError, gin.H{
+			c.JSON(http.StatusInternalServerError, gin.H{
 				"message": "Sign in fail. Can not login!",
 			})
 			return
@@ -90,7 +90,7 @@ func loginHandle(auth auth.Service) func(c *gin.Context) {
 
 		c.SetCookie("jwt", token, int(expTime.Unix()), "/", "localhost", false, true)
 
-		c.IndentedJSON(http.StatusAccepted, successMsg)
+		c.JSON(http.StatusAccepted, successMsg)
 	}
 }
 
@@ -101,28 +101,28 @@ func userHandle(auth auth.Service) func(c *gin.Context) {
 		println("id: ", *id)
 		user, err := auth.FindUserByID(*id)
 		if err != nil {
-			c.IndentedJSON(http.StatusNotFound, gin.H{
+			c.JSON(http.StatusNotFound, gin.H{
 				"message": err.Error(),
 			})
 			return
 		}
 
 		fmt.Println(user)
-		c.IndentedJSON(http.StatusAccepted, successMsg)
+		c.JSON(http.StatusAccepted, successMsg)
 	}
 }
 
 func logoutHandle(auth auth.Service) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		c.SetCookie("jwt", "", int(time.Now().Add(-time.Hour).Unix()), "/", "localhost", false, true)
-		c.IndentedJSON(http.StatusAccepted, successMsg)
+		c.JSON(http.StatusAccepted, successMsg)
 	}
 }
 
 func cookieAuth(c *gin.Context) (*int, error) {
 	cookie, err := c.Cookie("jwt")
 	if err != nil {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{
+		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "can not find cookies",
 		})
 		return nil, err
@@ -134,7 +134,7 @@ func cookieAuth(c *gin.Context) (*int, error) {
 
 	if err != nil {
 		fmt.Println(err)
-		c.IndentedJSON(http.StatusUnauthorized, gin.H{
+		c.JSON(http.StatusUnauthorized, gin.H{
 			"message": "unauthenticated",
 		})
 		return nil, err
@@ -143,7 +143,7 @@ func cookieAuth(c *gin.Context) (*int, error) {
 	claims := token.Claims.(*jwt.StandardClaims)
 	id, err := strconv.Atoi(claims.Issuer)
 	if err != nil {
-		c.IndentedJSON(http.StatusNotAcceptable, gin.H{
+		c.JSON(http.StatusNotAcceptable, gin.H{
 			"message": err.Error(),
 		})
 		return nil, err

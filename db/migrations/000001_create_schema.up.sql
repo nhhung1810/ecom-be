@@ -25,6 +25,11 @@ create table ProductUser(
     PRIMARY KEY(productid, userid)
 );
 
+
+ALTER TABLE ProductsOrder 
+ADD CONSTRAINT status_domain 
+CHECK (status in ('Completed', 'Pending', 'Cancel'))
+
 -- create table Orders(
 --     id SERIAL PRIMARY KEY,
 --     userid int not null REFERENCES Users(id),

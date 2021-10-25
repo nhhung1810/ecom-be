@@ -10,6 +10,7 @@ type Repository interface {
 	FetchAllOrderByProductID(id int) ([]ProductOrder, error)
 	CountAllOrderbySellerID(id int) (*int, error)
 	FetchAllOrderBySellerID(id int, limit int, offset int) ([]OrderBySeller, error)
+	UpdateStatusByOrder(id int, status string) error
 }
 
 type Service interface {
@@ -19,6 +20,7 @@ type Service interface {
 	FetchAllOrderByProductID(id int) ([]ProductOrder, error)
 	CountAllOrderbySellerID(id int) (*int, error)
 	FetchAllOrderBySellerID(id int, limit int, offset int) ([]OrderBySeller, error)
+	UpdateStatusByOrder(id int, status string) error
 }
 
 type service struct {
@@ -75,4 +77,11 @@ func (s *service) CountAllOrderbySellerID(id int) (*int, error) {
 		return nil, err
 	}
 	return count, nil
+}
+func (s *service) UpdateStatusByOrder(id int, status string) error {
+	err := s.r.UpdateStatusByOrder(id, status)
+	if err != nil {
+		return err
+	}
+	return nil
 }

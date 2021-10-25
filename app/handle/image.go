@@ -26,7 +26,7 @@ func getImageHandle(img myimg.Service) func(c *gin.Context) {
 		var queryImg myimg.Image
 		err := c.BindQuery(&queryImg)
 		if err != nil {
-			c.IndentedJSON(http.StatusNotAcceptable, gin.H{
+			c.JSON(http.StatusNotAcceptable, gin.H{
 				"message": "check your query",
 			})
 			return
@@ -35,14 +35,14 @@ func getImageHandle(img myimg.Service) func(c *gin.Context) {
 		buffer, err := img.GetImage(queryImg.Index, queryImg.ProductID)
 		if err != nil {
 			println(err.Error())
-			c.IndentedJSON(http.StatusInternalServerError, errInternal)
+			c.JSON(http.StatusInternalServerError, errInternal)
 		}
 		c.Header("Content-Type", "image/jpeg")
 		c.Header("Content-Length", strconv.Itoa(len(buffer.Bytes())))
 		c.Header("Cache-Control", "public, max-age=15552000")
 		if _, err := c.Writer.Write(buffer.Bytes()); err != nil {
 			println(err.Error())
-			c.IndentedJSON(http.StatusInternalServerError, errInternal)
+			c.JSON(http.StatusInternalServerError, errInternal)
 		}
 	}
 }
@@ -55,7 +55,7 @@ func imageHandle() func(c *gin.Context) {
 		f, err := os.Open("./blue.jpg")
 		if err != nil {
 			println(err.Error())
-			c.IndentedJSON(http.StatusInternalServerError, errInternal)
+			c.JSON(http.StatusInternalServerError, errInternal)
 			return
 		}
 
@@ -66,12 +66,12 @@ func imageHandle() func(c *gin.Context) {
 		err = jpeg.Encode(buffer, img, nil)
 		if err != nil {
 			println(err.Error())
-			c.IndentedJSON(http.StatusInternalServerError, errInternal)
+			c.JSON(http.StatusInternalServerError, errInternal)
 		}
 
 		if err != nil {
 			println(err.Error())
-			c.IndentedJSON(http.StatusInternalServerError, errInternal)
+			c.JSON(http.StatusInternalServerError, errInternal)
 			return
 		}
 		c.Header("Content-Type", "image/jpeg")
@@ -79,7 +79,7 @@ func imageHandle() func(c *gin.Context) {
 		c.Header("Cache-Control", "public, max-age=15552000")
 		if _, err := c.Writer.Write(buffer.Bytes()); err != nil {
 			println(err.Error())
-			c.IndentedJSON(http.StatusInternalServerError, errInternal)
+			c.JSON(http.StatusInternalServerError, errInternal)
 		}
 	}
 }
@@ -91,12 +91,12 @@ func newUploadImage(img myimg.Service) func(c *gin.Context) {
 		images, err := img.ParseImages(c)
 		if err != nil {
 			println(err.Error())
-			c.IndentedJSON(http.StatusBadRequest, errBadResquest)
+			c.JSON(http.StatusBadRequest, errBadResquest)
 		}
 
 		// call the interface to handle new images
 		img.UploadImage(images)
 
-		c.IndentedJSON(http.StatusCreated, successMsg)
+		c.JSON(http.StatusCreated, successMsg)
 	}
 }
