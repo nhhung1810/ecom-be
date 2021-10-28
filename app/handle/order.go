@@ -16,7 +16,7 @@ var errNotFound = gin.H{
 	"message": "not found",
 }
 
-func uploadOrder(or order.Service) func(c *gin.Context) {
+func uploadOrder(orderService order.Service) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		userid, err := cookieAuth(c)
 		if err != nil {
@@ -25,14 +25,14 @@ func uploadOrder(or order.Service) func(c *gin.Context) {
 			return
 		}
 		println("userid", userid)
-		ord, err := or.ParseOrder(c, *userid)
+		ord, err := orderService.ParseOrder(c, *userid)
 		if err != nil {
 			println(err.Error())
 			c.JSON(http.StatusBadRequest, errBadResquest)
 			return
 		}
 
-		err = or.AddOrder(ord)
+		err = orderService.AddOrder(ord)
 		if err != nil {
 			println(err.Error())
 			c.JSON(http.StatusInternalServerError, errInternal)
@@ -43,7 +43,7 @@ func uploadOrder(or order.Service) func(c *gin.Context) {
 	}
 }
 
-func getAllOrderByProductID(or order.Service) func(c *gin.Context) {
+func getAllOrderByProductID(orderService order.Service) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		type queryHandle struct {
 			ProductID int `form:"productid" binding:"required"`
@@ -57,7 +57,7 @@ func getAllOrderByProductID(or order.Service) func(c *gin.Context) {
 			return
 		}
 
-		orders, err := or.FetchAllOrderByProductID(qh.ProductID)
+		orders, err := orderService.FetchAllOrderByProductID(qh.ProductID)
 		if err != nil {
 			println(err.Error())
 			c.JSON(http.StatusNotFound, errNotFound)
@@ -71,7 +71,7 @@ func getAllOrderByProductID(or order.Service) func(c *gin.Context) {
 	}
 }
 
-func getAllOrderBySellerID(or order.Service) func(c *gin.Context) {
+func getAllOrderBySellerID(orderService order.Service) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		userid, err := cookieAuth(c)
 		if err != nil {
@@ -91,7 +91,7 @@ func getAllOrderBySellerID(or order.Service) func(c *gin.Context) {
 			paging.Offset = 0
 		}
 
-		orders, err := or.FetchAllOrderBySellerID(*userid, paging.Limit, paging.Offset)
+		orders, err := orderService.FetchAllOrderBySellerID(*userid, paging.Limit, paging.Offset)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, errInternal)
 			return
@@ -104,7 +104,7 @@ func getAllOrderBySellerID(or order.Service) func(c *gin.Context) {
 	}
 }
 
-func countAllOrderbySellerID(or order.Service) func(c *gin.Context) {
+func countAllOrderbySellerID(orderService order.Service) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		userid, err := cookieAuth(c)
 		if err != nil {
@@ -112,7 +112,7 @@ func countAllOrderbySellerID(or order.Service) func(c *gin.Context) {
 			return
 		}
 
-		count, err := or.CountAllOrderbySellerID(*userid)
+		count, err := orderService.CountAllOrderbySellerID(*userid)
 		if err != nil {
 			println(err.Error())
 			c.JSON(http.StatusInternalServerError, errInternal)
@@ -126,7 +126,7 @@ func countAllOrderbySellerID(or order.Service) func(c *gin.Context) {
 	}
 }
 
-func updateOrderStatus(or order.Service) func(c *gin.Context) {
+func updateOrderStatus(orderService order.Service) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		_, err := cookieAuth(c)
 		if err != nil {
@@ -147,7 +147,7 @@ func updateOrderStatus(or order.Service) func(c *gin.Context) {
 		}
 		println(qh.OrderId)
 		println(qh.StatusCode)
-		err = or.UpdateStatusByOrder(qh.OrderId,
+		err = orderService.UpdateStatusByOrder(qh.OrderId,
 			config.DefaultConfig.OrderStatus[qh.StatusCode%3])
 		if err != nil {
 			c.JSON(http.StatusNotFound, errNotFound)

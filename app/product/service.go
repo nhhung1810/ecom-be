@@ -10,9 +10,9 @@ type Repository interface {
 	FetchProductByID(id int) (*ProductImage, error)
 	FetchAllProductsByUser(id int) ([]ProductImage, error)
 	FetchAllProductsByCtg(ctg []string) ([]ProductImage, error)
-	FetchAllProductsWithFilter(ctgs []string,
-		sizes []string, colors []string) ([]ProductImage, error)
 	FetchAllProductsWithOrderInfo(userid int) ([]ProductWithOrderInfo, error)
+
+	FetchAllProductsWithFilter(filter ProductFilter) ([]ProductImage, error)
 }
 
 // Provide interface for product operation in handler
@@ -22,9 +22,9 @@ type Service interface {
 	ParseProduct(g *gin.Context) (*Product, error)
 	FetchAllProductsByUser(id int) ([]ProductImage, error)
 	FetchAllProductsByCtg(ctg []string) ([]ProductImage, error)
-	FetchAllProductsWithFilter(ctgs []string,
-		sizes []string, colors []string) ([]ProductImage, error)
 	FetchAllProductsWithOrderInfo(userid int) ([]ProductWithOrderInfo, error)
+
+	FetchAllProductsWithFilter(filter ProductFilter) ([]ProductImage, error)
 }
 
 // Abstract layer, implementing the service
@@ -75,9 +75,8 @@ func (s *service) FetchAllProductsByCtg(ctg []string) ([]ProductImage, error) {
 	return nil, nil
 }
 
-func (s *service) FetchAllProductsWithFilter(ctgs []string,
-	sizes []string, colors []string) ([]ProductImage, error) {
-	p, err := s.r.FetchAllProductsWithFilter(ctgs, sizes, colors)
+func (s *service) FetchAllProductsWithFilter(filter ProductFilter) ([]ProductImage, error) {
+	p, err := s.r.FetchAllProductsWithFilter(filter)
 	if err != nil {
 		return nil, err
 	}

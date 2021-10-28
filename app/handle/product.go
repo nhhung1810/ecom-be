@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func uploadProduct(pr product.Service) func(c *gin.Context) {
+func uploadProduct(productService product.Service) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		userid, err := cookieAuth(c)
 		println(*userid)
@@ -18,7 +18,7 @@ func uploadProduct(pr product.Service) func(c *gin.Context) {
 		}
 
 		// Phase insert product
-		prod, err := pr.ParseProduct(c)
+		prod, err := productService.ParseProduct(c)
 		if err != nil {
 			println(err.Error())
 			c.JSON(http.StatusBadRequest, gin.H{
@@ -27,7 +27,7 @@ func uploadProduct(pr product.Service) func(c *gin.Context) {
 			return
 		}
 
-		id, err := pr.AddProduct(*prod, *userid)
+		id, err := productService.AddProduct(*prod, *userid)
 		if err != nil {
 			println(err.Error())
 			c.JSON(http.StatusInternalServerError, gin.H{
@@ -43,7 +43,7 @@ func uploadProduct(pr product.Service) func(c *gin.Context) {
 	}
 }
 
-func getAllProducts(pr product.Service) func(c *gin.Context) {
+func getAllProducts(productService product.Service) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		userid, err := cookieAuth(c)
 		println(*userid)
@@ -53,7 +53,7 @@ func getAllProducts(pr product.Service) func(c *gin.Context) {
 			})
 		}
 
-		plist, err := pr.FetchAllProductsByUser(*userid)
+		plist, err := productService.FetchAllProductsByUser(*userid)
 		if err != nil {
 			println(err.Error())
 			c.JSON(http.StatusNotFound, gin.H{
@@ -68,7 +68,7 @@ func getAllProducts(pr product.Service) func(c *gin.Context) {
 	}
 }
 
-func getProductByID(pr product.Service) func(c *gin.Context) {
+func getProductByID(productService product.Service) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		var queryProd product.Product
 		err := c.BindQuery(&queryProd)
@@ -78,7 +78,7 @@ func getProductByID(pr product.Service) func(c *gin.Context) {
 			return
 		}
 
-		p, err := pr.FetchProductByID(queryProd.ID)
+		p, err := productService.FetchProductByID(queryProd.ID)
 		if err != nil {
 			println(err.Error())
 			c.JSON(http.StatusNotFound, gin.H{
@@ -94,16 +94,10 @@ func getProductByID(pr product.Service) func(c *gin.Context) {
 	}
 }
 
-func getProductWithFilter(pr product.Service) func(c *gin.Context) {
+func getProductWithFilter(productService product.Service) func(c *gin.Context) {
 	return func(c *gin.Context) {
-		type queryHandle struct {
-			Categories []string `form:"categories" binding:"required"`
-			Sizes      []string `form:"size"`
-			Colors     []string `form:"colors"`
-		}
-
-		var qh queryHandle
-		err := c.ShouldBindQuery(&qh)
+		var filter product.ProductFilter
+		err := c.ShouldBindQuery(&filter)
 		if err != nil {
 			println(err.Error())
 		}
@@ -113,7 +107,7 @@ func getProductWithFilter(pr product.Service) func(c *gin.Context) {
 			return
 		}
 
-		p, err := pr.FetchAllProductsWithFilter(qh.Categories, qh.Sizes, qh.Colors)
+		p, err := productService.FetchAllProductsWithFilter(filter)
 		if err != nil {
 			println(err.Error())
 			c.JSON(http.StatusNotFound, gin.H{
@@ -129,7 +123,7 @@ func getProductWithFilter(pr product.Service) func(c *gin.Context) {
 	}
 }
 
-func getProductWithOrder(pr product.Service) func(c *gin.Context) {
+func getProductWithOrder(productService product.Service) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		userid, err := cookieAuth(c)
 		if err != nil {
@@ -139,7 +133,7 @@ func getProductWithOrder(pr product.Service) func(c *gin.Context) {
 			return
 		}
 
-		plist, err := pr.FetchAllProductsWithOrderInfo(*userid)
+		plist, err := productService.FetchAllProductsWithOrderInfo(*userid)
 		if err != nil {
 			println(err.Error())
 			c.JSON(http.StatusInternalServerError, errInternal)

@@ -2,8 +2,10 @@ package database
 
 import (
 	"database/sql"
+	"ecom-be/app/config"
 	"ecom-be/app/product"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"strconv"
 
@@ -176,20 +178,28 @@ func (s *Storage) FetchAllProductsByCtg(ctgs []string) ([]product.ProductImage, 
 	return nil, nil
 }
 
-func (s *Storage) FetchAllProductsWithFilter(ctgs []string, sizes []string, colors []string) ([]product.ProductImage, error) {
+func (s *Storage) FetchAllProductsWithFilter(filter product.ProductFilter) ([]product.ProductImage, error) {
 	var plist []product.ProductImage
-	println("LENs OF ", len(ctgs), len(sizes), len(colors))
-	// println(ctgs[0], sizes[0], colors[0])
 	sqlQuery := `
 		SELECT 
 			id, name, categories, brand, price, 
 			size, color, quantity, description, created_date::timestamp
 		FROM products as p
 		WHERE $1 <@ p.categories
-		AND $2 <@ p.size
-		AND $3 <@ p.color`
-	ctgsParam, sizeParam, colorsParam := handleNullArray(ctgs, sizes, colors)
+		AND p.size && $2 
+		AND p.color && $3`
+	// THE OR-AND IS USE TO CANCEL THE
+	// EFFECT WHEN THERE ARE NO ELEMENT IN OR-SELECTOR
+	// IT WILL TAKE THE EFFECT OF THE AND-SELECTOR
+	// (AS THE AND-SELECTOR IS SMALLER THAN THE
+	// OR-SELECTOR, BUT IT WON'T RETURN 0 RESULT WHEN
+	// THE ARRAY IS EMPTY )
+	ctgsParam, sizeParam, colorsParam :=
+		handleNullArray(filter.Categories, filter.Size, filter.Color)
 
+	fmt.Printf("ctgsParam: %v\n", ctgsParam)
+	fmt.Printf("sizeParam: %v\n", sizeParam)
+	fmt.Printf("colorsParam: %v\n", colorsParam)
 	rows, err := s.db.Query(sqlQuery, ctgsParam, sizeParam, colorsParam)
 	if err != nil {
 		return nil, err
@@ -309,13 +319,13 @@ func handleNullArray(ctgs []string,
 	}
 
 	if (len(sizes) == 1 && sizes[0] == "") || (len(sizes) == 0) {
-		sizeParam = "{}"
+		sizeParam = pq.Array(config.SizeArray)
 	} else {
 		sizeParam = pq.Array(sizes)
 	}
 
 	if (len(colors) == 1 && colors[0] == "") || (len(colors) == 0) {
-		colorsParam = "{}"
+		colorsParam = pq.Array(config.ColorArray)
 	} else {
 		colorsParam = pq.Array(colors)
 	}

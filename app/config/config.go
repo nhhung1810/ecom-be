@@ -15,3 +15,20 @@ var DefaultConfig = &Config{
 		2: "Cancel",
 	},
 }
+
+var SizeArray = []string{
+	"s",
+	"m",
+	"l",
+	"xl",
+	"xll",
+}
+
+var ColorArray = []string{
+	"red",
+	"yellow",
+	"blue",
+	"orange",
+	"grey",
+	"silver",
+}

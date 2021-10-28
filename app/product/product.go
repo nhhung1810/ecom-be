@@ -31,3 +31,13 @@ type ProductWithOrderInfo struct {
 	Capacity    int       `json:"capacity"`
 	CreatedDate time.Time `json:"created_date"`
 }
+
+type ProductFilter struct {
+	Categories  []string `form:"categories" binding:"required"`
+	Size        []string `form:"size"`
+	Color       []string `form:"colors"`
+	Brand       []string `form:"brands"`
+	PriceStart  string   `form:"pstart"`
+	PriceStop   string   `form:"pstop"`
+	IsAvailable string   `form:"available"`
+}

@@ -11,7 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func Handler(auth auth.Service, img myimg.Service, pr product.Service, or order.Service) (*gin.Engine, error) {
+func Handler(auth auth.Service, img myimg.Service, productService product.Service, orderService order.Service) (*gin.Engine, error) {
 	router := gin.Default()
 
 	corConfig := cors.DefaultConfig()
@@ -38,25 +38,25 @@ func Handler(auth auth.Service, img myimg.Service, pr product.Service, or order.
 	router.POST("/image/upload", newUploadImage(img))
 
 	// PROD HANDLE
-	router.GET("/product", getAllProducts(pr))
-	router.GET("/product/q", getProductWithFilter(pr))
+	router.GET("/product", getAllProducts(productService))
+	router.GET("/product/q", getProductWithFilter(productService))
 	// ONLY FOR QUERY USE
-	router.GET("/product/info", getProductByID(pr))
-	router.POST("/product/upload", uploadProduct(pr))
+	router.GET("/product/info", getProductByID(productService))
+	router.POST("/product/upload", uploadProduct(productService))
 
 	// ORDER
-	router.POST("/order/upload", uploadOrder(or))
-	router.GET("/order", getAllOrderByProductID(or))
+	router.POST("/order/upload", uploadOrder(orderService))
+	router.GET("/order", getAllOrderByProductID(orderService))
 
 	// PRODUCT ORDER FOR SELLER DASHBOARD
-	router.GET("/seller/product", getProductWithOrder(pr))
-	router.GET("/seller/order", getAllOrderBySellerID(or))
+	router.GET("/seller/product", getProductWithOrder(productService))
+	router.GET("/seller/order", getAllOrderBySellerID(orderService))
 
 	// COUNT FOR PAGINGATE
-	router.GET("/order/count", countAllOrderbySellerID(or))
+	router.GET("/order/count", countAllOrderbySellerID(orderService))
 
 	// UPDATE STATUS
-	router.POST("/order/status", updateOrderStatus(or))
+	router.POST("/order/status", updateOrderStatus(orderService))
 
 	return router, nil
 }
