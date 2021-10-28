@@ -32,3 +32,9 @@ var ColorArray = []string{
 	"grey",
 	"silver",
 }
+
+var BrandArray = []string{
+	"zara",
+	"hm",
+	"ninomax",
+}

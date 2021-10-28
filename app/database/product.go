@@ -187,20 +187,20 @@ func (s *Storage) FetchAllProductsWithFilter(filter product.ProductFilter) ([]pr
 		FROM products as p
 		WHERE $1 <@ p.categories
 		AND p.size && $2 
-		AND p.color && $3`
+		AND p.color && $3
+		AND (p.brand || ARRAY[]::varchar(50)[]) && $4
+		`
 	// THE OR-AND IS USE TO CANCEL THE
 	// EFFECT WHEN THERE ARE NO ELEMENT IN OR-SELECTOR
 	// IT WILL TAKE THE EFFECT OF THE AND-SELECTOR
 	// (AS THE AND-SELECTOR IS SMALLER THAN THE
 	// OR-SELECTOR, BUT IT WON'T RETURN 0 RESULT WHEN
 	// THE ARRAY IS EMPTY )
-	ctgsParam, sizeParam, colorsParam :=
-		handleNullArray(filter.Categories, filter.Size, filter.Color)
+	ctgsParam, sizeParam, colorsParam, brandsParam :=
+		handleNullArray(filter.Categories, filter.Size, filter.Color, filter.Brand)
 
-	fmt.Printf("ctgsParam: %v\n", ctgsParam)
-	fmt.Printf("sizeParam: %v\n", sizeParam)
-	fmt.Printf("colorsParam: %v\n", colorsParam)
-	rows, err := s.db.Query(sqlQuery, ctgsParam, sizeParam, colorsParam)
+	fmt.Printf("brandsParam: %v\n", brandsParam)
+	rows, err := s.db.Query(sqlQuery, ctgsParam, sizeParam, colorsParam, brandsParam)
 	if err != nil {
 		return nil, err
 	}
@@ -308,9 +308,13 @@ func (s *Storage) FetchAllProductsWithOrderInfo(userid int) ([]product.ProductWi
 // PARAM HANDLE
 // PQ DP NOT HANDLE NIL VALUE OF THE STRING
 // SO I HAVE TO SELECT MANUALLY
-func handleNullArray(ctgs []string,
-	sizes []string, colors []string) (interface{}, interface{}, interface{}) {
-	var ctgsParam, sizeParam, colorsParam interface{}
+func handleNullArray(
+	ctgs []string,
+	sizes []string,
+	colors []string,
+	brands []string,
+) (interface{}, interface{}, interface{}, interface{}) {
+	var ctgsParam, sizeParam, colorsParam, brandsParam interface{}
 
 	if (len(ctgs) == 1 && ctgs[0] == "") || (len(ctgs) == 0) {
 		ctgsParam = "{}"
@@ -330,5 +334,11 @@ func handleNullArray(ctgs []string,
 		colorsParam = pq.Array(colors)
 	}
 
-	return ctgsParam, sizeParam, colorsParam
+	if (len(brands) == 1 && brands[0] == "") || (len(brands) == 0) {
+		brandsParam = pq.Array(config.BrandArray)
+	} else {
+		brandsParam = pq.Array(brands)
+	}
+
+	return ctgsParam, sizeParam, colorsParam, brandsParam
 }
