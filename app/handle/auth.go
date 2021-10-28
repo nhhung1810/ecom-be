@@ -2,6 +2,7 @@ package handle
 
 import (
 	"ecom-be/app/auth"
+	"ecom-be/app/config"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -12,7 +13,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-const SecretKey = "EcaLf2vYAe1GtT369eD6jtfxA0iXC6HlPj1meCE/oro="
+var SecretKey = config.DefaultConfig.SecretKey
 
 var successMsg = gin.H{
 	"message": "success",

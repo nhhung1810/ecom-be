@@ -54,6 +54,7 @@ func Handler(auth auth.Service, img myimg.Service, productService product.Servic
 
 	// COUNT FOR PAGINGATE
 	router.GET("/order/count", countAllOrderbySellerID(orderService))
+	router.GET("/product/count", countAllProductBySellerID(productService))
 
 	// UPDATE STATUS	
 	router.POST("/order/status", updateOrderStatus(orderService))

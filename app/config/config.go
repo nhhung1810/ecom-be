@@ -4,6 +4,7 @@ type Config struct {
 	ConnString  string
 	AllowOrigin []string
 	OrderStatus map[int]string
+	SecretKey   string
 }
 
 var DefaultConfig = &Config{
@@ -14,6 +15,7 @@ var DefaultConfig = &Config{
 		1: "Completed",
 		2: "Cancel",
 	},
+	SecretKey: "EcaLf2vYAe1GtT369eD6jtfxA0iXC6HlPj1meCE/oro=",
 }
 
 var SizeArray = []string{

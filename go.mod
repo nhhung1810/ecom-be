@@ -13,7 +13,8 @@ require (
 	github.com/rs/xid v1.3.0
 	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519
 	golang.org/x/text v0.3.7
-	golang.org/x/tools v0.0.0-20200103221440-774c71fcf114
+	golang.org/x/tools v0.1.0
 	gorm.io/driver/postgres v1.1.2
 	gorm.io/gorm v1.21.16
+	honnef.co/go/tools v0.2.1
 )

@@ -289,7 +289,25 @@ func (s *Storage) FetchAllProductsWithFilter(filter product.ProductFilter) ([]pr
 	return plist, nil
 }
 
-func (s *Storage) FetchAllProductsWithOrderInfo(userid int) ([]product.ProductWithOrderInfo, error) {
+func (s *Storage) CountAllProductBySellerID(id int) (*int, error) {
+	var count int
+	sqlQuery := `
+	SELECT 
+	count(p.id) as count_id
+	FROM PRODUCTS AS p
+	JOIN ProductUser as pu on pu.productid = p.id
+	WHERE pu.userid = $1`
+
+	err := s.db.QueryRow(sqlQuery, id).Scan(&count)
+	if err, ok := err.(*pq.Error); ok {
+		errStr := "pq error:" + err.Code.Name()
+		return nil, errors.New("count product by seller id error: " + errStr)
+	}
+
+	return &count, nil
+}
+
+func (s *Storage) FetchAllProductsWithOrderInfo(userid int, limit int, offset int) ([]product.ProductWithOrderInfo, error) {
 	// TODO: ADD PAGING
 	var plist []product.ProductWithOrderInfo
 	sqlQuery :=
@@ -306,7 +324,7 @@ func (s *Storage) FetchAllProductsWithOrderInfo(userid int) ([]product.ProductWi
 	LIMIT $2
 	OFFSET $3`
 
-	rows, err := s.db.Query(sqlQuery, userid, 5, 0)
+	rows, err := s.db.Query(sqlQuery, userid, limit, offset)
 	if err != nil {
 		return nil, err
 	}

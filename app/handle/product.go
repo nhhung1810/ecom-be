@@ -133,7 +133,19 @@ func getProductWithOrder(productService product.Service) func(c *gin.Context) {
 			return
 		}
 
-		plist, err := productService.FetchAllProductsWithOrderInfo(*userid)
+		type Paging struct {
+			Limit  int `form:"limit"`
+			Offset int `form:"offset"`
+		}
+
+		var paging Paging
+		err = c.ShouldBindQuery(&paging)
+		if err != nil {
+			paging.Limit = 5
+			paging.Offset = 0
+		}
+
+		plist, err := productService.FetchAllProductsWithOrderInfo(*userid, paging.Limit, paging.Offset)
 		if err != nil {
 			println(err.Error())
 			c.JSON(http.StatusInternalServerError, errInternal)
@@ -145,5 +157,27 @@ func getProductWithOrder(productService product.Service) func(c *gin.Context) {
 			"data":    plist,
 		})
 
+	}
+}
+
+func countAllProductBySellerID(productService product.Service) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		userid, err := cookieAuth(c)
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, errUnauthorized)
+			return
+		}
+
+		count, err := productService.CountAllProductBySellerID(*userid)
+		if err != nil {
+			println(err.Error())
+			c.JSON(http.StatusInternalServerError, errInternal)
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"message": "success",
+			"count":   &count,
+		})
 	}
 }
