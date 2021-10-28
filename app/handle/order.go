@@ -39,7 +39,7 @@ func uploadOrder(orderService order.Service) func(c *gin.Context) {
 			return
 		}
 
-		c.JSON(http.StatusAccepted, successMsg)
+		c.JSON(http.StatusOK, successMsg)
 	}
 }
 
@@ -64,7 +64,7 @@ func getAllOrderByProductID(orderService order.Service) func(c *gin.Context) {
 			return
 		}
 
-		c.JSON(http.StatusAccepted, gin.H{
+		c.JSON(http.StatusOK, gin.H{
 			"message": "success",
 			"data":    orders,
 		})
@@ -97,7 +97,7 @@ func getAllOrderBySellerID(orderService order.Service) func(c *gin.Context) {
 			return
 		}
 
-		c.JSON(http.StatusAccepted, gin.H{
+		c.JSON(http.StatusOK, gin.H{
 			"message": "success",
 			"data":    orders,
 		})
@@ -119,7 +119,7 @@ func countAllOrderbySellerID(orderService order.Service) func(c *gin.Context) {
 			return
 		}
 
-		c.JSON(http.StatusAccepted, gin.H{
+		c.JSON(http.StatusOK, gin.H{
 			"message": "success",
 			"count":   &count,
 		})
@@ -154,6 +154,6 @@ func updateOrderStatus(orderService order.Service) func(c *gin.Context) {
 			return
 		}
 
-		c.JSON(http.StatusAccepted, successMsg)
+		c.JSON(http.StatusOK, successMsg)
 	}
 }

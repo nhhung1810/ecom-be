@@ -60,7 +60,7 @@ func getAllProducts(productService product.Service) func(c *gin.Context) {
 				"message": err.Error(),
 			})
 		}
-		c.JSON(http.StatusAccepted, gin.H{
+		c.JSON(http.StatusOK, gin.H{
 			"message":  "success",
 			"products": plist,
 		})
@@ -87,7 +87,7 @@ func getProductByID(productService product.Service) func(c *gin.Context) {
 			return
 		}
 
-		c.JSON(http.StatusAccepted, gin.H{
+		c.JSON(http.StatusOK, gin.H{
 			"message": "success",
 			"data":    p,
 		})
@@ -116,7 +116,7 @@ func getProductWithFilter(productService product.Service) func(c *gin.Context) {
 			return
 		}
 
-		c.JSON(http.StatusAccepted, gin.H{
+		c.JSON(http.StatusOK, gin.H{
 			"message": "success",
 			"data":    p,
 		})
@@ -140,7 +140,7 @@ func getProductWithOrder(productService product.Service) func(c *gin.Context) {
 			return
 		}
 
-		c.JSON(http.StatusAccepted, gin.H{
+		c.JSON(http.StatusOK, gin.H{
 			"message": "success",
 			"data":    plist,
 		})

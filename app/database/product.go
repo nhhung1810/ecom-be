@@ -181,26 +181,58 @@ func (s *Storage) FetchAllProductsByCtg(ctgs []string) ([]product.ProductImage, 
 func (s *Storage) FetchAllProductsWithFilter(filter product.ProductFilter) ([]product.ProductImage, error) {
 	var plist []product.ProductImage
 	sqlQuery := `
-		SELECT 
-			id, name, categories, brand, price, 
-			size, color, quantity, description, created_date::timestamp
-		FROM products as p
-		WHERE $1 <@ p.categories
+	SELECT 
+		id, name, categories, brand, p.price, 
+		p.size, p.color, p.quantity, description, p.created_date::timestamp
+	FROM products as p
+	LEFT JOIN productsorder as po on p.id = po.productid
+	WHERE $1 <@ p.categories
 		AND p.size && $2 
 		AND p.color && $3
 		AND (p.brand || ARRAY[]::varchar(50)[]) && $4
+		AND p.price BETWEEN $5 AND $6
+	GROUP BY id, name, categories, brand, p.price, 
+		p.size, p.color, p.quantity, description, p.created_date::timestamp
 		`
-	// THE OR-AND IS USE TO CANCEL THE
-	// EFFECT WHEN THERE ARE NO ELEMENT IN OR-SELECTOR
-	// IT WILL TAKE THE EFFECT OF THE AND-SELECTOR
-	// (AS THE AND-SELECTOR IS SMALLER THAN THE
-	// OR-SELECTOR, BUT IT WON'T RETURN 0 RESULT WHEN
-	// THE ARRAY IS EMPTY )
+	if len(filter.IsAvailable) > 0 {
+		if filter.IsAvailable[0] == "" {
+			sqlQuery += ""
+		} else if len(filter.IsAvailable) == 1 {
+			if filter.IsAvailable[0] == "in" {
+				sqlQuery += " HAVING p.quantity - COALESCE(sum(po.quantity), 0) <> 0"
+			} else if filter.IsAvailable[0] == "out" {
+				sqlQuery += " HAVING p.quantity - COALESCE(sum(po.quantity), 0) = 0"
+			}
+		} else if len(filter.IsAvailable) == 2 {
+			sqlQuery += ""
+		}
+	}
+
+	// ORDER THE QUERY
+	sqlQuery += " ORDER BY p.id"
+
 	ctgsParam, sizeParam, colorsParam, brandsParam :=
 		handleNullArray(filter.Categories, filter.Size, filter.Color, filter.Brand)
 
+	priceStart, err := strconv.Atoi(filter.PriceStart)
+	if err != nil {
+		return nil, err
+	}
+
+	priceStop, err := strconv.Atoi(filter.PriceStop)
+	if err != nil {
+		return nil, err
+	}
+
 	fmt.Printf("brandsParam: %v\n", brandsParam)
-	rows, err := s.db.Query(sqlQuery, ctgsParam, sizeParam, colorsParam, brandsParam)
+	rows, err := s.db.Query(sqlQuery,
+		ctgsParam,
+		sizeParam,
+		colorsParam,
+		brandsParam,
+		priceStart,
+		priceStop,
+	)
 	if err != nil {
 		return nil, err
 	}

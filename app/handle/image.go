@@ -44,6 +44,8 @@ func getImageHandle(img myimg.Service) func(c *gin.Context) {
 			println(err.Error())
 			c.JSON(http.StatusInternalServerError, errInternal)
 		}
+
+		c.JSON(http.StatusOK, successMsg)
 	}
 }
 
@@ -81,6 +83,8 @@ func imageHandle() func(c *gin.Context) {
 			println(err.Error())
 			c.JSON(http.StatusInternalServerError, errInternal)
 		}
+
+		c.JSON(http.StatusOK, successMsg)
 	}
 }
 

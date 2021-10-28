@@ -90,7 +90,7 @@ func loginHandle(auth auth.Service) func(c *gin.Context) {
 
 		c.SetCookie("jwt", token, int(expTime.Unix()), "/", "localhost", false, true)
 
-		c.JSON(http.StatusAccepted, successMsg)
+		c.JSON(http.StatusOK, successMsg)
 	}
 }
 
@@ -108,14 +108,14 @@ func userHandle(auth auth.Service) func(c *gin.Context) {
 		}
 
 		fmt.Println(user)
-		c.JSON(http.StatusAccepted, successMsg)
+		c.JSON(http.StatusOK, successMsg)
 	}
 }
 
 func logoutHandle(auth auth.Service) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		c.SetCookie("jwt", "", int(time.Now().Add(-time.Hour).Unix()), "/", "localhost", false, true)
-		c.JSON(http.StatusAccepted, successMsg)
+		c.JSON(http.StatusOK, successMsg)
 	}
 }
 

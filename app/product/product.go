@@ -39,5 +39,5 @@ type ProductFilter struct {
 	Brand       []string `form:"brands"`
 	PriceStart  string   `form:"pstart"`
 	PriceStop   string   `form:"pstop"`
-	IsAvailable string   `form:"available"`
+	IsAvailable []string `form:"available"`
 }
