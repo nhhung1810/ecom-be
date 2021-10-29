@@ -97,17 +97,27 @@ func getProductByID(productService product.Service) func(c *gin.Context) {
 func getProductWithFilter(productService product.Service) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		var filter product.ProductFilter
-		err := c.ShouldBindQuery(&filter)
-		if err != nil {
-			println(err.Error())
+		type SortIndex struct {
+			Index int `form:"sort"`
 		}
+		var sortIndex SortIndex
+		err := c.ShouldBindQuery(&filter)
 		if err != nil {
 			println(err.Error())
 			c.JSON(http.StatusBadRequest, errBadResquest)
 			return
 		}
 
-		p, err := productService.FetchAllProductsWithFilter(filter)
+		err = c.ShouldBindQuery(&sortIndex)
+		if err != nil {
+			println(err.Error())
+			// sortIndex.index = 0
+		}
+		sortIndex.Index %= 4
+		println(sortIndex.Index)
+
+		p, err := productService.FetchAllProductsWithFilter(filter,
+			sortIndex.Index)
 		if err != nil {
 			println(err.Error())
 			c.JSON(http.StatusNotFound, gin.H{

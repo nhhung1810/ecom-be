@@ -15,6 +15,7 @@ type Product struct {
 	Quantity    int       `json:"quantity"`
 	Description string    `json:"description"`
 	CreatedDate time.Time `json:"created_date"`
+	Remain      int       `json:"remain"`
 }
 
 type ProductImage struct {

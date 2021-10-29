@@ -57,7 +57,9 @@ create table ProductsOrder(
 -- PARSER DON'T UNDERSTAND IT
 CREATE OR REPLACE FUNCTION find_remain(integer) RETURNS integer
     AS '
-		select (max(p.quantity) - sum(ps.quantity)) as remaining from products as p
+		select 
+            (max(p.quantity) - sum(ps.quantity)) as remaining 
+        from products as p
 		join productsorder as ps on p.id = ps.productid
 		WHERE p.id = $1
 		GROUP BY p.id;
@@ -73,7 +75,7 @@ CREATE OR REPLACE FUNCTION check_insert()
    LANGUAGE PLPGSQL
 AS $$
 BEGIN
-   if NEW.quantity > find_remain(1) THEN
+   if NEW.quantity > find_remain(NEW.productid) THEN
    		RAISE EXCEPTION 'Quantity limit exceed';
    END IF;
    
@@ -86,4 +88,4 @@ CREATE TRIGGER check_quantity
 BEFORE INSERT OR UPDATE
 ON productsorder
 FOR EACH ROW 
-EXECUTE PROCEDURE 
+EXECUTE PROCEDURE check_insert()

@@ -62,7 +62,6 @@ func (s *service) UploadImage(image *Image) error {
 	for i, _ := range tmp {
 		f, err := tmp[i].Open()
 		if err != nil {
-			println(err.Error())
 			return err
 		}
 		defer f.Close()
@@ -71,7 +70,6 @@ func (s *service) UploadImage(image *Image) error {
 		out, err := os.Create("./images/" + image.ProductID +
 			"/" + tmp[i].Filename + ".jpg")
 		if err != nil {
-			println(err.Error())
 			return err
 		}
 		defer out.Close()
@@ -79,11 +77,8 @@ func (s *service) UploadImage(image *Image) error {
 		// Populate the file into placeholder
 		_, err = io.Copy(out, f)
 		if err != nil {
-			println(err.Error())
 			return err
 		}
-
-		println("success" + tmp[i].Filename)
 	}
 
 	// No need to handle the link with product

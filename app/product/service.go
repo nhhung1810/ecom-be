@@ -12,7 +12,7 @@ type Repository interface {
 	FetchAllProductsByCtg(ctg []string) ([]ProductImage, error)
 	FetchAllProductsWithOrderInfo(userid int, limit int, offset int) ([]ProductWithOrderInfo, error)
 
-	FetchAllProductsWithFilter(filter ProductFilter) ([]ProductImage, error)
+	FetchAllProductsWithFilter(filter ProductFilter, sortIndex int) ([]ProductImage, error)
 	CountAllProductBySellerID(id int) (*int, error)
 }
 
@@ -26,7 +26,7 @@ type Service interface {
 
 	FetchAllProductsWithOrderInfo(userid int, limit int, offset int) ([]ProductWithOrderInfo, error)
 
-	FetchAllProductsWithFilter(filter ProductFilter) ([]ProductImage, error)
+	FetchAllProductsWithFilter(filter ProductFilter, sortIndex int) ([]ProductImage, error)
 	CountAllProductBySellerID(id int) (*int, error)
 }
 
@@ -78,8 +78,8 @@ func (s *service) FetchAllProductsByCtg(ctg []string) ([]ProductImage, error) {
 	return nil, nil
 }
 
-func (s *service) FetchAllProductsWithFilter(filter ProductFilter) ([]ProductImage, error) {
-	p, err := s.r.FetchAllProductsWithFilter(filter)
+func (s *service) FetchAllProductsWithFilter(filter ProductFilter, sortIndex int) ([]ProductImage, error) {
+	p, err := s.r.FetchAllProductsWithFilter(filter, sortIndex)
 	if err != nil {
 		return nil, err
 	}

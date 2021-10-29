@@ -50,7 +50,6 @@ func (s *service) AddAccount(req Credential) error {
 func (s *service) CheckExisted(req Credential) (*User, error) {
 	result, err := s.r.FindUserByEmail(req.Email)
 	if err != nil {
-		println(err.Error())
 		return nil, err
 	}
 

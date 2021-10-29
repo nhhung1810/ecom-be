@@ -37,15 +37,15 @@ func getImageHandle(img myimg.Service) func(c *gin.Context) {
 			println(err.Error())
 			c.JSON(http.StatusInternalServerError, errInternal)
 		}
+
 		c.Header("Content-Type", "image/jpeg")
 		c.Header("Content-Length", strconv.Itoa(len(buffer.Bytes())))
 		c.Header("Cache-Control", "public, max-age=15552000")
 		if _, err := c.Writer.Write(buffer.Bytes()); err != nil {
 			println(err.Error())
 			c.JSON(http.StatusInternalServerError, errInternal)
+			return
 		}
-
-		c.JSON(http.StatusOK, successMsg)
 	}
 }
 

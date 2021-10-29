@@ -148,7 +148,7 @@ func updateOrderStatus(orderService order.Service) func(c *gin.Context) {
 		println(qh.OrderId)
 		println(qh.StatusCode)
 		err = orderService.UpdateStatusByOrder(qh.OrderId,
-			config.DefaultConfig.OrderStatus[qh.StatusCode%3])
+			config.OrderStatus[qh.StatusCode%3])
 		if err != nil {
 			c.JSON(http.StatusNotFound, errNotFound)
 			return

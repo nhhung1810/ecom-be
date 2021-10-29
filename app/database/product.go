@@ -5,7 +5,6 @@ import (
 	"ecom-be/app/config"
 	"ecom-be/app/product"
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"strconv"
 
@@ -117,7 +116,6 @@ func (s *Storage) FetchAllProductsByUser(id int) ([]product.ProductImage, error)
 	)
 
 	if err != nil {
-		println(err.Error())
 		return nil, err
 	}
 	defer rows.Close()
@@ -178,12 +176,13 @@ func (s *Storage) FetchAllProductsByCtg(ctgs []string) ([]product.ProductImage, 
 	return nil, nil
 }
 
-func (s *Storage) FetchAllProductsWithFilter(filter product.ProductFilter) ([]product.ProductImage, error) {
+func (s *Storage) FetchAllProductsWithFilter(filter product.ProductFilter, sortIndex int) ([]product.ProductImage, error) {
 	var plist []product.ProductImage
 	sqlQuery := `
 	SELECT 
 		id, name, categories, brand, p.price, 
-		p.size, p.color, p.quantity, description, p.created_date::timestamp
+		p.size, p.color, p.quantity, description, p.created_date::timestamp,
+		p.quantity - COALESCE(sum(po.quantity), 0) as remain
 	FROM products as p
 	LEFT JOIN productsorder as po on p.id = po.productid
 	WHERE $1 <@ p.categories
@@ -194,6 +193,8 @@ func (s *Storage) FetchAllProductsWithFilter(filter product.ProductFilter) ([]pr
 	GROUP BY id, name, categories, brand, p.price, 
 		p.size, p.color, p.quantity, description, p.created_date::timestamp
 		`
+
+	// ADD FILTER TO QUERY
 	if len(filter.IsAvailable) > 0 {
 		if filter.IsAvailable[0] == "" {
 			sqlQuery += ""
@@ -209,7 +210,7 @@ func (s *Storage) FetchAllProductsWithFilter(filter product.ProductFilter) ([]pr
 	}
 
 	// ORDER THE QUERY
-	sqlQuery += " ORDER BY p.id"
+	sqlQuery += config.SortProductList[sortIndex]
 
 	ctgsParam, sizeParam, colorsParam, brandsParam :=
 		handleNullArray(filter.Categories, filter.Size, filter.Color, filter.Brand)
@@ -224,7 +225,6 @@ func (s *Storage) FetchAllProductsWithFilter(filter product.ProductFilter) ([]pr
 		return nil, err
 	}
 
-	fmt.Printf("brandsParam: %v\n", brandsParam)
 	rows, err := s.db.Query(sqlQuery,
 		ctgsParam,
 		sizeParam,
@@ -251,6 +251,7 @@ func (s *Storage) FetchAllProductsWithFilter(filter product.ProductFilter) ([]pr
 			&p.Quantity,
 			&p.Description,
 			&p.CreatedDate,
+			&p.Remain,
 		)
 
 		if err != nil {
@@ -343,9 +344,7 @@ func (s *Storage) FetchAllProductsWithOrderInfo(userid int, limit int, offset in
 		)
 
 		if err != nil {
-			println(err.Error())
 			if err == sql.ErrNoRows {
-				println(err.Error())
 				return nil, errNotExistedProduct
 			}
 			return nil, errUnknown

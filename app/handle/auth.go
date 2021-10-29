@@ -3,7 +3,6 @@ package handle
 import (
 	"ecom-be/app/auth"
 	"ecom-be/app/config"
-	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -82,7 +81,6 @@ func loginHandle(auth auth.Service) func(c *gin.Context) {
 
 		token, err := claims.SignedString([]byte(SecretKey))
 		if err != nil {
-			fmt.Println(err)
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"message": "Sign in fail. Can not login!",
 			})
@@ -99,8 +97,7 @@ func userHandle(auth auth.Service) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		id, err := cookieAuth(c)
 
-		println("id: ", *id)
-		user, err := auth.FindUserByID(*id)
+		_, err = auth.FindUserByID(*id)
 		if err != nil {
 			c.JSON(http.StatusNotFound, gin.H{
 				"message": err.Error(),
@@ -108,7 +105,6 @@ func userHandle(auth auth.Service) func(c *gin.Context) {
 			return
 		}
 
-		fmt.Println(user)
 		c.JSON(http.StatusOK, successMsg)
 	}
 }
@@ -134,7 +130,6 @@ func cookieAuth(c *gin.Context) (*int, error) {
 	})
 
 	if err != nil {
-		fmt.Println(err)
 		c.JSON(http.StatusUnauthorized, gin.H{
 			"message": "unauthenticated",
 		})
