@@ -397,3 +397,25 @@ func handleNullArray(
 
 	return ctgsParam, sizeParam, colorsParam, brandsParam
 }
+
+func (s *Storage) SearchProductByName(name string) (*product.SearchProduct, error) {
+	var result product.SearchProduct
+
+	sqlQuery := `
+	SELECT p.id, p.categories
+	FROM Products as p
+	WHERE UPPER(p.name) like '%' || $1 || '%'
+	LIMIT 1
+	`
+	err := s.db.QueryRow(sqlQuery, name).
+		Scan(&result.ID, pq.Array(&result.Categories))
+
+	println(result.ID)
+	if err, ok := err.(*pq.Error); ok {
+		errStr := "pq error:" + err.Code.Name()
+		println(errStr)
+		return nil, errors.New("search product error: " + errStr)
+	}
+
+	return &result, nil
+}

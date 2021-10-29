@@ -42,3 +42,8 @@ type ProductFilter struct {
 	PriceStop   string   `form:"pstop"`
 	IsAvailable []string `form:"available"`
 }
+
+type SearchProduct struct {
+	ID         int      `form:"id" json:"id"`
+	Categories []string `json:"categories"`
+}

@@ -191,3 +191,30 @@ func countAllProductBySellerID(productService product.Service) func(c *gin.Conte
 		})
 	}
 }
+
+func searchProductByName(productService product.Service) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		type QueryHandle struct {
+			Name string `form:"name"`
+		}
+
+		var qh QueryHandle
+		err := c.ShouldBindQuery(&qh)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, errBadResquest)
+			return
+		}
+		println(qh.Name)
+
+		p, err := productService.SearchProductByName(qh.Name)
+		if err != nil {
+			c.JSON(http.StatusNotFound, errNotFound)
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"message": "success",
+			"data":    p,
+		})
+	}
+}
