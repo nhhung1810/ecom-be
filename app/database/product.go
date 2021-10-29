@@ -54,9 +54,14 @@ func (s *Storage) AddProduct(p product.Product, userid int) (*int, error) {
 func (s *Storage) FetchProductByID(id int) (*product.ProductImage, error) {
 	var p product.Product
 	rows := s.db.QueryRow(
-		`SELECT id, name, categories, brand, price, 
-				size, color, quantity, description, created_date::timestamp
-		FROM Products WHERE id = $1`,
+		`SELECT id, name, p.categories, p.brand, p.price, 
+				p.size, p.color, p.quantity, p.description, p.created_date::timestamp,
+				p.quantity - COALESCE(sum(po.quantity), 0) as remain
+		FROM Products as p
+		LEFT JOIN ProductsOrder as po on po.productid = p.id
+		WHERE p.id = $1
+		GROUP BY id, name, categories, brand, p.price, P.size, p.color, 
+		p.quantity, description, p.created_date::timestamp`,
 		id,
 	)
 
@@ -71,6 +76,7 @@ func (s *Storage) FetchProductByID(id int) (*product.ProductImage, error) {
 		&p.Quantity,
 		&p.Description,
 		&p.CreatedDate,
+		&p.Remain,
 	)
 
 	if err != nil {
