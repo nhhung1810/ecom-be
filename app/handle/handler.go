@@ -30,7 +30,7 @@ func Handler(auth auth.Service, img myimg.Service, productService product.Servic
 	router.POST("/register", registerHandle(auth))
 	router.POST("/login", loginHandle(auth))
 	router.POST("/logout", logoutHandle(auth))
-	router.GET("/user", userHandle(auth))
+	router.GET("/check", userHandle(auth))
 
 	// IMAGE HANDLE
 	// router.GET("/image", imageHandle())

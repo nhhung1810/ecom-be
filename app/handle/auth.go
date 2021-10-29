@@ -95,13 +95,9 @@ func loginHandle(auth auth.Service) func(c *gin.Context) {
 
 func userHandle(auth auth.Service) func(c *gin.Context) {
 	return func(c *gin.Context) {
-		id, err := cookieAuth(c)
-
-		_, err = auth.FindUserByID(*id)
+		_, err := cookieAuth(c)
 		if err != nil {
-			c.JSON(http.StatusNotFound, gin.H{
-				"message": err.Error(),
-			})
+			c.JSON(http.StatusUnauthorized, errUnauthorized)
 			return
 		}
 
