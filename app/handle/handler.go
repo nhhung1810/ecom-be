@@ -40,6 +40,7 @@ func Handler(auth auth.Service, img myimg.Service, productService product.Servic
 	// PROD HANDLE
 	router.GET("/product", getAllProducts(productService))
 	router.GET("/product/q", getProductWithFilter(productService))
+	router.GET("/product/random", getRandomProduct(productService))
 	router.GET("/product/search", searchProductByName(productService))
 	// ONLY FOR QUERY USE
 	router.GET("/product/info", getProductByID(productService))

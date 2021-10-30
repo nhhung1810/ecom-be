@@ -218,3 +218,29 @@ func searchProductByName(productService product.Service) func(c *gin.Context) {
 		})
 	}
 }
+
+func getRandomProduct(productService product.Service) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		type Paging struct {
+			Limit  int `form:"limit"`
+			Offset int `form:"offset"`
+		}
+
+		var paging Paging
+		paging.Limit = 4
+		paging.Offset = 0
+
+		plist, err := productService.FetchAllProductsWithOrderInfo(1,
+			paging.Limit, paging.Offset)
+		if err != nil {
+			println(err.Error())
+			c.JSON(http.StatusInternalServerError, errInternal)
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"message": "success",
+			"data":    plist,
+		})
+	}
+}
