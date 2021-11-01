@@ -42,6 +42,7 @@ func Handler(auth auth.Service, img myimg.Service, productService product.Servic
 	router.GET("/product/q", getProductWithFilter(productService))
 	router.GET("/product/random", getRandomProduct(productService))
 	router.GET("/product/search", searchProductByName(productService))
+
 	// ONLY FOR QUERY USE
 	router.GET("/product/info", getProductByID(productService))
 	router.POST("/product/upload", uploadProduct(productService))
@@ -60,6 +61,9 @@ func Handler(auth auth.Service, img myimg.Service, productService product.Servic
 
 	// UPDATE STATUS
 	router.PATCH("/order/status", updateOrderStatus(orderService))
+
+	// ARCHIVE PRODUCTS
+	router.PATCH("/product/archive", archiveProduct(productService))
 
 	return router, nil
 }

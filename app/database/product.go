@@ -60,6 +60,7 @@ func (s *Storage) FetchProductByID(id int) (*product.ProductImage, error) {
 		FROM Products as p
 		LEFT JOIN ProductsOrder as po on po.productid = p.id
 		WHERE p.id = $1
+		AND p.archive = 0
 		GROUP BY id, name, categories, brand, p.price, P.size, p.color, 
 		p.quantity, description, p.created_date::timestamp`,
 		id,
@@ -117,7 +118,9 @@ func (s *Storage) FetchAllProductsByUser(id int) ([]product.ProductImage, error)
 				size, color, quantity, description, created_date::timestamp
 		FROM Products as p
 		JOIN ProductUser AS pu ON p.id = pu.productid
-		WHERE pu.userid = $1`,
+		WHERE pu.userid = $1
+		AND p.archive = 0
+		`,
 		id,
 	)
 
@@ -196,7 +199,8 @@ func (s *Storage) FetchAllProductsWithFilter(filter product.ProductFilter, sortI
 		AND p.color && $3
 		AND (p.brand || ARRAY[]::varchar(50)[]) && $4
 		AND p.price BETWEEN $5 AND $6
-	GROUP BY id, name, categories, brand, p.price, 
+		AND p.archive = 0
+		GROUP BY id, name, categories, brand, p.price, 
 		p.size, p.color, p.quantity, description, p.created_date::timestamp
 		`
 
@@ -303,7 +307,9 @@ func (s *Storage) CountAllProductBySellerID(id int) (*int, error) {
 	count(p.id) as count_id
 	FROM PRODUCTS AS p
 	JOIN ProductUser as pu on pu.productid = p.id
-	WHERE pu.userid = $1`
+	WHERE pu.userid = $1
+	AND p.archive = 0
+	`
 
 	err := s.db.QueryRow(sqlQuery, id).Scan(&count)
 	if err, ok := err.(*pq.Error); ok {
@@ -326,8 +332,9 @@ func (s *Storage) FetchAllProductsWithOrderInfo(userid int, limit int, offset in
 	LEFT JOIN ProductsOrder as ps ON p.id = ps.productid
 	JOIN ProductUser as pu on pu.productid = p.id
 	WHERE pu.userid = $1
-	AND ps.status NOT LIKE '%Cancel%'
-	GROUP BY p.id, p.name, p.quantity, p.categories, p.created_date
+	AND p.archive = 0
+	GROUP BY 
+		p.id, p.name, p.quantity, p.categories, p.created_date, p.archive
 	ORDER BY p.created_date
 	LIMIT $2
 	OFFSET $3`
@@ -406,12 +413,12 @@ func (s *Storage) SearchProductByName(name string) (*product.SearchProduct, erro
 	SELECT p.id, p.categories
 	FROM Products as p
 	WHERE UPPER(p.name) like '%' || $1 || '%'
+	AND p.archive = 0
 	LIMIT 1
 	`
 	err := s.db.QueryRow(sqlQuery, name).
 		Scan(&result.ID, pq.Array(&result.Categories))
 
-	println(result.ID)
 	if err, ok := err.(*pq.Error); ok {
 		errStr := "pq error:" + err.Code.Name()
 		println(errStr)
@@ -419,4 +426,20 @@ func (s *Storage) SearchProductByName(name string) (*product.SearchProduct, erro
 	}
 
 	return &result, nil
+}
+
+func (s *Storage) ArchiveProductByID(id int) error {
+	var pid int
+	sqlQuery := `
+	UPDATE Products
+	SET archive = 1
+	WHERE id = $1
+	`
+	err := s.db.QueryRow(sqlQuery, id).Scan(&pid)
+	if err, ok := err.(*pq.Error); ok {
+		errStr := "pq error:" + err.Code.Name()
+		println(errStr)
+		return errors.New("archive product error: " + errStr)
+	}
+	return nil
 }

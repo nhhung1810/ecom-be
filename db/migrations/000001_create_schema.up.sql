@@ -48,6 +48,10 @@ ALTER TABLE ProductsOrder
 ADD CONSTRAINT status_domain 
 CHECK (status in ('Completed', 'Pending', 'Cancel'))
 
+ALTER TABLE Products
+ADD COLUMN archive int default 0;
+
+
 
 -- INSERT INTO ProductsOrder(userid, productid, quantity, price, color, size)
 -- VALUES ($1, $2, $3, $4, $5, $6) RETURNING orderid

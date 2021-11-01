@@ -244,3 +244,33 @@ func getRandomProduct(productService product.Service) func(c *gin.Context) {
 		})
 	}
 }
+
+func archiveProduct(productService product.Service) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		_, err := cookieAuth(c)
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, errUnauthorized)
+			return
+		}
+
+		type QueryHandle struct {
+			ID int `form:"id" required`
+		}
+
+		var qh QueryHandle
+		err = c.BindQuery(&qh)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, errBadResquest)
+			return
+		}
+
+		err = productService.ArchiveProductByID(qh.ID)
+		if err != nil {
+			println(err.Error())
+			c.JSON(http.StatusNotFound, errNotFound)
+			return
+		}
+
+		c.JSON(http.StatusOK, successMsg)
+	}
+}
