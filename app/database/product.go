@@ -326,6 +326,7 @@ func (s *Storage) FetchAllProductsWithOrderInfo(userid int, limit int, offset in
 	LEFT JOIN ProductsOrder as ps ON p.id = ps.productid
 	JOIN ProductUser as pu on pu.productid = p.id
 	WHERE pu.userid = $1
+	AND ps.status NOT LIKE '%Cancel%'
 	GROUP BY p.id, p.name, p.quantity, p.categories, p.created_date
 	ORDER BY p.created_date
 	LIMIT $2

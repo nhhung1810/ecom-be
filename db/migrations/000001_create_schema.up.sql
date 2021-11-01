@@ -25,11 +25,6 @@ create table ProductUser(
     PRIMARY KEY(productid, userid)
 );
 
-
-ALTER TABLE ProductsOrder 
-ADD CONSTRAINT status_domain 
-CHECK (status in ('Completed', 'Pending', 'Cancel'))
-
 -- create table Orders(
 --     id SERIAL PRIMARY KEY,
 --     userid int not null REFERENCES Users(id),
@@ -47,6 +42,12 @@ create table ProductsOrder(
     size VARCHAR(50) not null
     created_date date DEFAULT current_date,
 );
+
+
+ALTER TABLE ProductsOrder 
+ADD CONSTRAINT status_domain 
+CHECK (status in ('Completed', 'Pending', 'Cancel'))
+
 
 -- INSERT INTO ProductsOrder(userid, productid, quantity, price, color, size)
 -- VALUES ($1, $2, $3, $4, $5, $6) RETURNING orderid
@@ -67,8 +68,6 @@ CREATE OR REPLACE FUNCTION find_remain(integer) RETURNS integer
     LANGUAGE SQL
     IMMUTABLE
     RETURNS NULL ON NULL INPUT;
-
--- SELECT * FROM find_remain(1);
 
 CREATE OR REPLACE FUNCTION check_insert() 
    RETURNS TRIGGER 
