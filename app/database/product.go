@@ -185,7 +185,12 @@ func (s *Storage) FetchAllProductsByCtg(ctgs []string) ([]product.ProductImage, 
 	return nil, nil
 }
 
-func (s *Storage) FetchAllProductsWithFilter(filter product.ProductFilter, sortIndex int) ([]product.ProductImage, error) {
+func (s *Storage) FetchAllProductsWithFilter(
+	filter product.ProductFilter,
+	sortIndex int,
+	limit int,
+	offset int,
+) ([]product.ProductImage, error) {
 	var plist []product.ProductImage
 	sqlQuery := `
 	SELECT 
@@ -202,6 +207,7 @@ func (s *Storage) FetchAllProductsWithFilter(filter product.ProductFilter, sortI
 		AND p.archive = 0
 		GROUP BY id, name, categories, brand, p.price, 
 		p.size, p.color, p.quantity, description, p.created_date::timestamp
+	
 		`
 
 	// ADD FILTER TO QUERY
@@ -234,6 +240,11 @@ func (s *Storage) FetchAllProductsWithFilter(filter product.ProductFilter, sortI
 	if err != nil {
 		return nil, err
 	}
+	sqlQuery +=
+		`
+	LIMIT $7
+	OFFSET $8
+	`
 
 	rows, err := s.db.Query(sqlQuery,
 		ctgsParam,
@@ -242,6 +253,8 @@ func (s *Storage) FetchAllProductsWithFilter(filter product.ProductFilter, sortI
 		brandsParam,
 		priceStart,
 		priceStop,
+		limit,
+		offset,
 	)
 	if err != nil {
 		return nil, err
@@ -442,4 +455,72 @@ func (s *Storage) ArchiveProductByID(id int) error {
 		return errors.New("archive product error: " + errStr)
 	}
 	return nil
+}
+
+func (s *Storage) CountAllProduct(
+	filter product.ProductFilter,
+) (*int, error) {
+	sqlQuery := `
+	SELECT count(*) FROM (
+	SELECT 
+		count(id) 
+	FROM products as p
+	LEFT JOIN productsorder as po on p.id = po.productid
+	WHERE $1 <@ p.categories
+		AND p.size && $2 
+		AND p.color && $3
+		AND (p.brand || ARRAY[]::varchar(50)[]) && $4
+		AND p.price BETWEEN $5 AND $6
+		AND p.archive = 0
+		GROUP BY id
+		`
+
+	// ADD FILTER TO QUERY
+	if len(filter.IsAvailable) > 0 {
+		if filter.IsAvailable[0] == "" {
+			sqlQuery += ""
+		} else if len(filter.IsAvailable) == 1 {
+			if filter.IsAvailable[0] == "in" {
+				sqlQuery += " HAVING p.quantity - COALESCE(sum(po.quantity), 0) <> 0"
+			} else if filter.IsAvailable[0] == "out" {
+				sqlQuery += " HAVING p.quantity - COALESCE(sum(po.quantity), 0) = 0"
+			}
+		} else if len(filter.IsAvailable) == 2 {
+			sqlQuery += ""
+		}
+	}
+
+	// END QUERY
+	sqlQuery += ") real_q"
+
+	// HANDLE PARAMS
+	ctgsParam, sizeParam, colorsParam, brandsParam :=
+		handleNullArray(filter.Categories, filter.Size, filter.Color, filter.Brand)
+
+	priceStart, err := strconv.Atoi(filter.PriceStart)
+	if err != nil {
+		return nil, err
+	}
+
+	priceStop, err := strconv.Atoi(filter.PriceStop)
+	if err != nil {
+		return nil, err
+	}
+	var count int
+	err = s.db.QueryRow(sqlQuery,
+		ctgsParam,
+		sizeParam,
+		colorsParam,
+		brandsParam,
+		priceStart,
+		priceStop,
+	).Scan(&count)
+
+	if err, ok := err.(*pq.Error); ok {
+		errStr := "pq error:" + err.Code.Name()
+		return nil, errors.New("count products error: " + errStr)
+	}
+	println("count filter prod", count)
+
+	return &count, nil
 }

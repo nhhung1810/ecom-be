@@ -97,10 +97,6 @@ func getProductByID(productService product.Service) func(c *gin.Context) {
 func getProductWithFilter(productService product.Service) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		var filter product.ProductFilter
-		type SortIndex struct {
-			Index int `form:"sort"`
-		}
-		var sortIndex SortIndex
 		err := c.ShouldBindQuery(&filter)
 		if err != nil {
 			println(err.Error())
@@ -108,16 +104,36 @@ func getProductWithFilter(productService product.Service) func(c *gin.Context) {
 			return
 		}
 
+		// SORT PARSING
+		type SortIndex struct {
+			Index int `form:"sort"`
+		}
+		var sortIndex SortIndex
 		err = c.ShouldBindQuery(&sortIndex)
 		if err != nil {
 			println(err.Error())
 			// sortIndex.index = 0
 		}
 		sortIndex.Index %= 4
-		println(sortIndex.Index)
+		// PAGING PARSING
+		type Paging struct {
+			Limit  int `form:"limit"`
+			Offset int `form:"offset"`
+		}
 
-		p, err := productService.FetchAllProductsWithFilter(filter,
-			sortIndex.Index)
+		var paging Paging
+		err = c.ShouldBindQuery(&paging)
+		if err != nil {
+			paging.Limit = 20
+			paging.Offset = 0
+		}
+
+		p, err := productService.FetchAllProductsWithFilter(
+			filter,
+			sortIndex.Index,
+			paging.Limit,
+			paging.Offset,
+		)
 		if err != nil {
 			println(err.Error())
 			c.JSON(http.StatusNotFound, gin.H{
@@ -272,5 +288,31 @@ func archiveProduct(productService product.Service) func(c *gin.Context) {
 		}
 
 		c.JSON(http.StatusOK, successMsg)
+	}
+}
+
+func countAllProducts(productService product.Service) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		var filter product.ProductFilter
+		err := c.ShouldBindQuery(&filter)
+		if err != nil {
+			println(err.Error())
+			c.JSON(http.StatusBadRequest, errBadResquest)
+			return
+		}
+
+		count, err := productService.CountAllProduct(filter)
+		if err != nil {
+			println(err.Error())
+			c.JSON(http.StatusNotFound, gin.H{
+				"message": "not found",
+			})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"message": "success",
+			"count":   &count,
+		})
 	}
 }

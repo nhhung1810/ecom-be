@@ -11,8 +11,14 @@ type Repository interface {
 	FetchAllProductsByUser(id int) ([]ProductImage, error)
 	FetchAllProductsByCtg(ctg []string) ([]ProductImage, error)
 	FetchAllProductsWithOrderInfo(userid int, limit int, offset int) ([]ProductWithOrderInfo, error)
-	FetchAllProductsWithFilter(filter ProductFilter, sortIndex int) ([]ProductImage, error)
+	FetchAllProductsWithFilter(
+		filter ProductFilter,
+		sortIndex int,
+		limit int,
+		offset int,
+	) ([]ProductImage, error)
 	CountAllProductBySellerID(id int) (*int, error)
+	CountAllProduct(filter ProductFilter) (*int, error)
 	SearchProductByName(name string) (*SearchProduct, error)
 	ArchiveProductByID(id int) error
 }
@@ -25,8 +31,14 @@ type Service interface {
 	FetchAllProductsByUser(id int) ([]ProductImage, error)
 	FetchAllProductsByCtg(ctg []string) ([]ProductImage, error)
 	FetchAllProductsWithOrderInfo(userid int, limit int, offset int) ([]ProductWithOrderInfo, error)
-	FetchAllProductsWithFilter(filter ProductFilter, sortIndex int) ([]ProductImage, error)
+	FetchAllProductsWithFilter(
+		filter ProductFilter,
+		sortIndex int,
+		limit int,
+		offset int,
+	) ([]ProductImage, error)
 	CountAllProductBySellerID(id int) (*int, error)
+	CountAllProduct(filter ProductFilter) (*int, error)
 	SearchProductByName(name string) (*SearchProduct, error)
 
 	ArchiveProductByID(id int) error
@@ -80,8 +92,13 @@ func (s *service) FetchAllProductsByCtg(ctg []string) ([]ProductImage, error) {
 	return nil, nil
 }
 
-func (s *service) FetchAllProductsWithFilter(filter ProductFilter, sortIndex int) ([]ProductImage, error) {
-	p, err := s.r.FetchAllProductsWithFilter(filter, sortIndex)
+func (s *service) FetchAllProductsWithFilter(
+	filter ProductFilter,
+	sortIndex int,
+	limit int,
+	offset int,
+) ([]ProductImage, error) {
+	p, err := s.r.FetchAllProductsWithFilter(filter, sortIndex, limit, offset)
 	if err != nil {
 		return nil, err
 	}
@@ -119,4 +136,12 @@ func (s *service) ArchiveProductByID(id int) error {
 	}
 
 	return nil
+}
+
+func (s *service) CountAllProduct(filter ProductFilter) (*int, error) {
+	count, err := s.r.CountAllProduct(filter)
+	if err != nil {
+		return nil, err
+	}
+	return count, nil
 }
